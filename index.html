@@ -24,8 +24,9 @@
 <script src="js/xlsx.js"></script>
 <script src="js/views-a.js"></script>
 <script src="js/views-b.js"></script>
+<script src="js/blocks.js"></script>
 <script>
-  load(); applyTheme();
+  load(); ensureBlocks(); applyTheme();
   matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
   window.addEventListener('hashchange', route);
   if (!location.hash) location.hash = '#/' + (S.ui.view || 'dashboard'); else route();
