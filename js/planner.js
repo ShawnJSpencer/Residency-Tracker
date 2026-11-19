@@ -52,7 +52,7 @@ VIEWS.planner = {
     if (wrap) {
       if (st && st.sx != null) { wrap.scrollLeft = st.sx; wrap.scrollTop = st.sy; }
       else { const cur = wrap.querySelector('th.mo.cur'); if (cur) wrap.scrollLeft = Math.max(0, cur.getBoundingClientRect().left - wrap.querySelector('table').getBoundingClientRect().left - 300 - 46 * 3); }
-      setupPaint(wrap);
+      setupPaint(wrap); setupLongPress(wrap);
     }
     $$('.notes-t textarea').forEach(autoGrow);
   },
@@ -82,8 +82,8 @@ function ganttHTML() {
         return `<td class="m ${m.endsWith('-01') ? 'jan' : ''} ${m === cym ? 'cur' : ''}" data-m="${m}" ${m === cym ? `style="--tf:${tf.toFixed(3)}"` : ''} ${tip}>${on ? `<div class="bar ${s ? 's' : ''} ${e ? 'e' : ''}" style="--c:${catColor(t.cat)}">${esc(note)}</div>` : ''}</td>`;
       }).join('') + '</tr>';
   }
-  return `<div class="gantt-wrap"><table class="gantt ${paintEdit ? 'editing' : ''} ${S.ui.planner.names === 'collapsed' ? 'names-collapsed' : ''}">
-    <thead><tr><th class="namecol" rowspan="2" style="padding:0 6px;vertical-align:bottom;padding-bottom:6px"><button class="namecaret" data-act="nameToggle" title="${S.ui.planner.names === 'collapsed' ? 'Show task names' : 'Hide task names'}" aria-label="Toggle task names"><svg viewBox="0 0 24 24" width="18" height="18"><path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="tlabel">Task <span class="muted small">(${tasks.length})</span></span></th>${yrs.map(y => `<th class="yr" colspan="${y.n}">${y.y}</th>`).join('')}</tr>
+  return `<div class="gantt-wrap"><table class="gantt ${paintEdit ? 'editing' : ''} ${S.ui.planner.names === 'full' ? 'names-full' : ''}">
+    <thead><tr><th class="namecol" rowspan="2" style="padding:0 6px;vertical-align:bottom;padding-bottom:6px"><button class="namecaret" data-act="nameToggle" title="${S.ui.planner.names === 'full' ? 'Shorten task names' : 'Show full task names'}" aria-label="Toggle task names"><svg viewBox="0 0 24 24" width="18" height="18"><path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="tlabel">Task <span class="muted small">(${tasks.length})</span></span></th>${yrs.map(y => `<th class="yr" colspan="${y.n}">${y.y}</th>`).join('')}</tr>
     <tr>${months.map(m => `<th class="mo ${m.endsWith('-01') ? 'jan' : ''} ${m === cym ? 'cur' : ''}">${MONTHS[+m.slice(5) - 1]}${m === cym ? '<br><span style="font-size:9px">TODAY</span>' : ''}</th>`).join('')}</tr></thead>
     <tbody>${rows}</tbody></table></div>`;
 }
@@ -126,7 +126,37 @@ function notesHTML() {
 function autoGrow(el) { const f = () => { el.style.height = 'auto'; el.style.height = el.scrollHeight + 2 + 'px'; }; f(); el.addEventListener('input', f); }
 
 ACT.pmode = el => { S.ui.planner.mode = el.dataset.m; save(); render(); };
-ACT.nameToggle = () => { const p = S.ui.planner; p.names = p.names === 'collapsed' ? 'full' : 'collapsed'; save(); render(); };
+ACT.nameToggle = () => { const p = S.ui.planner; p.names = p.names === 'full' ? 'short' : 'full'; save(); render(); };
+/* long-press (touch) on a task name or bar shows the full name */
+let lpBubble;
+function hideBubble() { if (lpBubble) { lpBubble.remove(); lpBubble = null; } }
+function showBubble(t, m, x, y) {
+  hideBubble();
+  const ms = [...t.months].sort(), when = ms.length ? (ms.length > 1 ? `${ymLabel(ms[0])} – ${ymLabel(ms.at(-1))}` : ymLabel(ms[0])) : 'Unscheduled';
+  lpBubble = document.createElement('div'); lpBubble.className = 'lp-bubble';
+  lpBubble.innerHTML = `<b>${esc(t.name)}</b><div>${when}${m && t.monthNotes?.[m] ? ' · ' + esc(t.monthNotes[m]) : ''}</div>${t.owner ? `<div>👤 ${esc(t.owner)}</div>` : ''}<div class="lp-hint">Tap to open details</div>`;
+  lpBubble.onclick = () => { hideBubble(); openTask(t.id); };
+  document.body.appendChild(lpBubble);
+  const w = lpBubble.offsetWidth, h = lpBubble.offsetHeight;
+  lpBubble.style.left = Math.max(8, Math.min(x - w / 2, innerWidth - w - 8)) + 'px';
+  lpBubble.style.top = (y - h - 18 > 8 ? y - h - 18 : y + 24) + 'px';
+}
+document.addEventListener('pointerdown', e => { if (lpBubble && !e.target.closest('.lp-bubble')) hideBubble(); }, true);
+function setupLongPress(wrap) {
+  let timer = null, sx = 0, sy = 0, fired = false;
+  wrap.addEventListener('pointerdown', e => {
+    if (e.pointerType === 'mouse' || paintEdit) return;
+    const cell = e.target.closest('td.namecol, td.m'), tr = cell && cell.closest('tr[data-id]');
+    if (!tr || (cell.matches('td.m') && !cell.querySelector('.bar'))) return;
+    sx = e.clientX; sy = e.clientY; fired = false; clearTimeout(timer);
+    timer = setTimeout(() => { fired = true; timer = null; showBubble(findTask(tr.dataset.id), cell.dataset.m, sx, sy); if (navigator.vibrate) navigator.vibrate(12); }, 450);
+  });
+  wrap.addEventListener('pointermove', e => { if (timer && Math.hypot(e.clientX - sx, e.clientY - sy) > 8) { clearTimeout(timer); timer = null; } });
+  ['pointerup', 'pointercancel'].forEach(ev => wrap.addEventListener(ev, () => { clearTimeout(timer); timer = null; }));
+  wrap.addEventListener('click', e => { if (fired) { e.stopPropagation(); e.preventDefault(); fired = false; } }, true);
+  wrap.addEventListener('contextmenu', e => e.preventDefault());
+  wrap.addEventListener('scroll', hideBubble, { passive: true });
+}
 ACT.paintmode = () => { paintEdit = !paintEdit; render(); };
 ACT.togglecat = el => { const h = S.ui.planner.hidden, k = el.dataset.k; S.ui.planner.hidden = h.includes(k) ? h.filter(x => x !== k) : [...h, k]; save(); render(); };
 ACT.openTask = el => openTask(el.dataset.id);

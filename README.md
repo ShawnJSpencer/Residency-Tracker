@@ -5,7 +5,8 @@ Planning and tracking app for the Utah Valley Hospital Psychiatry Residency star
 Plain HTML/CSS/JS with no build step and no dependencies. Host it with GitHub Pages (Settings → Pages → Deploy from branch `main`, folder `/`) or open `index.html` locally.
 
 ## Sections
-- **Startup Planner** – Elizabeth's GME Gantt (Oct 2026 – Jul 2028): category-colored bars, a today line, owners, date notes, statuses, checklists, and the Notes & Contacts sheet. Tap **Edit bars** to paint months; the ‹ caret collapses the task-name column (handy on iPhone). **Import Excel** re-reads an updated copy of her workbook and merges it in.
+- **Startup Planner** – Elizabeth's GME Gantt (Oct 2026 – Jul 2028): category-colored bars, a today line, owners, date notes, statuses, checklists, and the Notes & Contacts sheet. Tap **Edit bars** to paint months; the caret switches task names between shortened and full; on iPhone, press and hold a name or bar to see the full name. **Import Excel** re-reads an updated copy of her workbook and merges it in.
+- **Anonymous Reports** – link and QR code (generated in the app) for the resident-facing `report.html` form (preview only, nothing is sent yet), a reviewer inbox with a flashing new-report alert in the menu and on the dashboard, status tracking, notes, a response to the reporter's follow-up code, summary counts, and a go-live checklist.
 - **Calendar** – meetings, interview days, didactic Thursdays and key dates. Exports an `.ics` file for Outlook.
 - **Recruitment** – applicants (ERAS CSV import), interview days with schedules, a weighted scoring rubric, and the rank list.
 - **CCC / PEC / Meetings** – agendas, attendance, minutes and action items, plus a tentative academic-year cycle generator.

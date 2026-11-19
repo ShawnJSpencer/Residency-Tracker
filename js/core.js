@@ -1,6 +1,6 @@
 /* Residency Tracker — core: state, helpers, router, modals */
 'use strict';
-const APP_VERSION = 'v3';
+const APP_VERSION = 'v4';
 const KEY = 'residencyTracker.v1';
 
 const CATS = {
@@ -178,6 +178,7 @@ const NAV = [
   ['dashboard', 'Dashboard', '<path d="M3 13h8V3H3zm0 8h8v-6H3zm10 0h8V11h-8zm0-18v6h8V3z"/>'],
   ['planner', 'Startup Planner', '<path d="M3 5h10v3H3zm4 5h12v3H7zm-2 5h9v3H5z"/>'],
   ['calendar', 'Calendar', '<path d="M7 2v2H5a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2V2h-2v2H9V2zm-2 8h14v9H5z"/>'],
+  ['reports', 'Anonymous Reports', '<path d="M12 2 4 5v6c0 5 3.4 9.7 8 11 4.6-1.3 8-6 8-11V5zm-1 5h2v6h-2zm0 8h2v2h-2z"/>'],
   ['sep'],
   ['recruit', 'Recruitment', '<path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm0 2c-4 0-8 2-8 5v1h16v-1c0-3-4-5-8-5z"/>'],
   ['meetings', 'CCC / PEC / Meetings', '<path d="M4 4h16v11H7l-3 3zM8 8h8v2H8z"/>'],
@@ -194,7 +195,7 @@ const NAV = [
 function renderNav() {
   const v = S.ui.view;
   $('#nav').innerHTML = `<div class="brand"><b>Residency Tracker</b><small>${esc(S.settings.programName)}</small></div>` +
-    NAV.map(n => n[0] === 'sep' ? '<div class="sep"></div>' : `<a href="#/${n[0]}" class="${v === n[0] ? 'active' : ''}"><svg viewBox="0 0 24 24" fill="currentColor">${n[2]}</svg>${n[1]}</a>`).join('') +
+    NAV.map(n => { if (n[0] === 'sep') return '<div class="sep"></div>'; const b = n[0] === 'reports' && typeof reportsNew === 'function' ? reportsNew() : 0; return `<a href="#/${n[0]}" class="${v === n[0] ? 'active' : ''} ${b ? 'has-alert' : ''}"><svg viewBox="0 0 24 24" fill="currentColor">${n[2]}</svg>${n[1]}${b ? `<span class="nav-badge">${b}</span>` : ''}</a>`; }).join('') +
     `<div class="foot">${APP_VERSION} · data saved on this device</div>`;
 }
 function render() {
@@ -204,7 +205,7 @@ function render() {
   const main = $('#main');
   const sx = main.querySelector('.gantt-wrap')?.scrollLeft, sy = main.querySelector('.gantt-wrap')?.scrollTop;
   main.innerHTML = VIEWS[v].render();
-  document.title = `${VIEWS[v].title} · Residency Tracker`;
+  const nr = typeof reportsNew === 'function' ? reportsNew() : 0; document.title = `${nr ? `(${nr}) New report · ` : ''}${VIEWS[v].title} · Residency Tracker`;
   VIEWS[v].after && VIEWS[v].after({ sx, sy });
 }
 function route() { const h = location.hash.replace(/^#\/?/, '') || 'dashboard'; S.ui.view = h.split('/')[0]; save(); render(); window.scrollTo(0, 0); }

@@ -60,6 +60,7 @@ VIEWS.dashboard = {
     const li = x => `<div class="li"><span class="dot" style="background:${catColor(x.cat)}"></span><div class="grow ellipsis"><a href="#" data-act="dashTask" data-id="${x.id}">${esc(x.name)}</a></div><span class="muted small">${x.months.length ? [...x.months].sort().map(ymLabel).filter((v, i, a) => i === 0 || i === a.length - 1).join(' – ') : ''}</span>${statusChip(x.status, 'cycleTask', x.id)}</div>`;
     return `
     <div class="page-head"><div><h1>${esc(S.settings.programName)}</h1><div class="sub">${new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</div></div></div>
+    ${reportBanner()}
     <div class="grid g4" style="margin-bottom:16px">
       <div class="card stat"><span class="lbl">Until first residents start</span><span class="num">${dStart > 0 ? dStart.toLocaleString() : '—'}</span><span class="cap">days · ${fmtDate(S.settings.programStart)}</span></div>
       <div class="card stat"><span class="lbl">Until Match Day</span><span class="num">${dMatch > 0 ? dMatch.toLocaleString() : '—'}</span><span class="cap">days · ${fmtDate(S.settings.matchDay)}</span></div>
