@@ -22,6 +22,16 @@ function reportBanner() {
   return `<a class="rpt-alert" href="#/reports"><span class="rpt-siren"></span><div><b>${n} new anonymous report${n > 1 ? 's' : ''}</b><div class="small">Latest received ${fmtDT(newest.received)} · ${esc(newest.category)}${newest.sample ? ' · SAMPLE' : ''}</div></div><span class="rpt-go">Review now →</span></a>`;
 }
 
+const RPT_CHECKLIST = [
+  ['host', 'Choose an Intermountain-approved way to receive reports that records no names, sign-ins, emails or IP addresses'],
+  ['reviewers', 'Decide who reviews reports (ideally including someone outside residents\' direct supervision, e.g., the DIO / GME office)'],
+  ['secure', 'Move the reviewer inbox off this device to a secured, access-controlled location'],
+  ['timeline', 'Set a response standard (e.g., acknowledge within 2 business days) and an escalation path for safety issues'],
+  ['policy', 'Put the reporting process and non-retaliation statement in the resident handbook'],
+  ['aggregate', 'Agree how reports are summarized for the PEC / APE without identifying anyone'],
+  ['publicize', 'Introduce it at orientation; post the QR code in workrooms and on badge cards'],
+  ['test', 'Run an end-to-end test before the first residents arrive'],
+];
 VIEWS.reports = {
   title: 'Anonymous Reports',
   render() {
@@ -31,16 +41,6 @@ VIEWS.reports = {
     const cats = {}; R.forEach(r => cats[r.category] = (cats[r.category] || 0) + 1);
     const max = Math.max(1, ...Object.values(cats));
     const ackd = R.filter(r => r.ackAt), avgH = ackd.length ? avg(ackd.map(r => (new Date(r.ackAt) - new Date(r.received)) / 36e5)) : null;
-    const CL = [
-      ['host', 'Choose an Intermountain-approved way to receive reports that records no names, sign-ins, emails or IP addresses'],
-      ['reviewers', 'Decide who reviews reports (ideally including someone outside residents\' direct supervision, e.g., the DIO / GME office)'],
-      ['secure', 'Move the reviewer inbox off this device to a secured, access-controlled location'],
-      ['timeline', 'Set a response standard (e.g., acknowledge within 2 business days) and an escalation path for safety issues'],
-      ['policy', 'Put the reporting process and non-retaliation statement in the resident handbook'],
-      ['aggregate', 'Agree how reports are summarized for the PEC / APE without identifying anyone'],
-      ['publicize', 'Introduce it at orientation; post the QR code in workrooms and on badge cards'],
-      ['test', 'Run an end-to-end test before the first residents arrive'],
-    ];
     return `<div class="page-head"><div><h1>Anonymous Reports</h1><div class="sub">A confidential channel for residents to raise concerns without fear of retaliation. <b>Shell / preview</b> — the form isn't live yet.</div></div><div class="spacer"></div><button class="btn" data-act="rptSim">Simulate incoming report</button></div>
     ${reportBanner()}
     <div class="grid g2" style="margin-bottom:16px">
@@ -56,7 +56,7 @@ VIEWS.reports = {
     </div>
     <div class="card" style="padding:0;margin-bottom:16px"><div style="padding:14px 16px 4px;font-weight:650;font-size:15px">Inbox</div>
       ${R.length ? `<div class="list" style="padding:0 16px 8px">${R.map(r => `<div class="li rpt-row ${r.status === 'new' ? 'is-new' : ''}" data-act="rptOpen" data-id="${r.id}"><span class="chip ${RPT_CLS[r.status]}">${r.status === 'new' ? '● ' : ''}${RPT_ST[r.status]}</span><div class="grow" style="min-width:0"><b>${esc(r.category)}</b>${r.sample ? ' <span class="chip st-na">SAMPLE</span>' : ''}<div class="small muted ellipsis">${esc(r.what)}</div></div><span class="when" style="text-align:right">${fmtDate(toISO(new Date(r.received)), { noYear: 1 })}</span></div>`).join('')}</div>` : '<div class="empty"><b>No reports</b>When reports arrive they will show up here and flash on the dashboard.</div>'}</div>
-    <div class="card"><h2>Before going live</h2><div class="list">${CL.map(([k, l]) => `<label class="li check" style="font-size:13.5px;align-items:flex-start"><input type="checkbox" data-rcl="${k}" ${S.reports.checklist[k] ? 'checked' : ''} style="margin-top:3px"> <span style="${S.reports.checklist[k] ? 'text-decoration:line-through;color:var(--ink-3)' : ''}">${l}</span></label>`).join('')}</div></div>`;
+    <div class="card"><h2>Before going live</h2><div class="list">${RPT_CHECKLIST.map(([k, l]) => `<label class="li check" style="font-size:13.5px;align-items:flex-start"><input type="checkbox" data-rcl="${k}" ${S.reports.checklist[k] ? 'checked' : ''} style="margin-top:3px"> <span style="${S.reports.checklist[k] ? 'text-decoration:line-through;color:var(--ink-3)' : ''}">${l}</span></label>`).join('')}</div></div>`;
   },
 };
 document.addEventListener('change', e => { const el = e.target.closest('[data-rcl]'); if (!el) return; S.reports.checklist[el.dataset.rcl] = el.checked; save(); render(); });

@@ -1,6 +1,6 @@
 /* Residency Tracker — core: state, helpers, router, modals */
 'use strict';
-const APP_VERSION = 'v4';
+const APP_VERSION = 'v5';
 const KEY = 'residencyTracker.v1';
 
 const CATS = {
@@ -190,12 +190,13 @@ const NAV = [
   ['faculty', 'Faculty', '<path d="M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zm7 1a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM2 20v-1c0-3 3.5-5 7-5s7 2 7 5v1zm15 0v-1c0-1.6-.7-2.9-1.8-3.9 3 .2 6.8 1.6 6.8 3.9v1z"/>'],
   ['accred', 'Accreditation', '<path d="M12 2 4 5v6c0 5 3.4 9.7 8 11 4.6-1.3 8-6 8-11V5zm-1.2 14.2-3.5-3.5 1.4-1.4 2.1 2.1 4.9-4.9 1.4 1.4z"/>'],
   ['sep'],
+  ['roadmap', 'Roadmap & Checklists', '<path d="M4 5h2v2H4zm4 0h12v2H8zm-4 6h2v2H4zm4 0h12v2H8zm-4 6h2v2H4zm4 0h12v2H8z"/>'],
   ['settings', 'Settings & Data', '<path d="M19.4 13a7.6 7.6 0 0 0 0-2l2-1.6-2-3.4-2.4 1a7 7 0 0 0-1.7-1L15 3.5h-4L10.7 6a7 7 0 0 0-1.7 1l-2.4-1-2 3.4 2 1.6a7.6 7.6 0 0 0 0 2l-2 1.6 2 3.4 2.4-1a7 7 0 0 0 1.7 1l.3 2.5h4l.3-2.5a7 7 0 0 0 1.7-1l2.4 1 2-3.4zM13 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/>'],
 ];
 function renderNav() {
   const v = S.ui.view;
   $('#nav').innerHTML = `<div class="brand"><b>Residency Tracker</b><small>${esc(S.settings.programName)}</small></div>` +
-    NAV.map(n => { if (n[0] === 'sep') return '<div class="sep"></div>'; const b = n[0] === 'reports' && typeof reportsNew === 'function' ? reportsNew() : 0; return `<a href="#/${n[0]}" class="${v === n[0] ? 'active' : ''} ${b ? 'has-alert' : ''}"><svg viewBox="0 0 24 24" fill="currentColor">${n[2]}</svg>${n[1]}${b ? `<span class="nav-badge">${b}</span>` : ''}</a>`; }).join('') +
+    NAV.map(n => { if (n[0] === 'sep') return '<div class="sep"></div>'; const b = n[0] === 'reports' && typeof reportsNew === 'function' ? reportsNew() : 0; const rc = n[0] === 'roadmap' && typeof roadmapOpen === 'function' ? roadmapOpen() : 0; return `<a href="#/${n[0]}" class="${v === n[0] ? 'active' : ''} ${b ? 'has-alert' : ''}"><svg viewBox="0 0 24 24" fill="currentColor">${n[2]}</svg>${n[1]}${b ? `<span class="nav-badge">${b}</span>` : ''}${rc ? `<span class="nav-count">${rc}</span>` : ''}</a>`; }).join('') +
     `<div class="foot">${APP_VERSION} · data saved on this device</div>`;
 }
 function render() {

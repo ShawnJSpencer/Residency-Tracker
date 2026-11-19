@@ -294,3 +294,5 @@ button .blk{height:26px}
 .rpt-row.is-new{background:var(--bad-soft)}
 .rpt-quote{background:var(--surface-2);border-left:3px solid var(--line-strong);border-radius:6px;padding:10px 12px;font-size:14.5px;color:var(--ink);white-space:pre-wrap}
 @media (prefers-reduced-motion:reduce){.nav-badge,.nav a.has-alert,.rpt-alert,.rpt-siren{animation:none}}
+
+.nav-count{margin-left:auto;background:rgba(255,255,255,.16);color:#fff;border-radius:999px;min-width:22px;height:20px;padding:0 6px;font-size:11.5px;font-weight:700;display:inline-flex;align-items:center;justify-content:center}
