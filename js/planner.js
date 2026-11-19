@@ -82,8 +82,8 @@ function ganttHTML() {
         return `<td class="m ${m.endsWith('-01') ? 'jan' : ''} ${m === cym ? 'cur' : ''}" data-m="${m}" ${m === cym ? `style="--tf:${tf.toFixed(3)}"` : ''} ${tip}>${on ? `<div class="bar ${s ? 's' : ''} ${e ? 'e' : ''}" style="--c:${catColor(t.cat)}">${esc(note)}</div>` : ''}</td>`;
       }).join('') + '</tr>';
   }
-  return `<div class="gantt-wrap"><table class="gantt ${paintEdit ? 'editing' : ''}">
-    <thead><tr><th class="namecol" rowspan="2" style="padding:0 10px;vertical-align:bottom;padding-bottom:6px">Task <span class="muted small">(${tasks.length})</span></th>${yrs.map(y => `<th class="yr" colspan="${y.n}">${y.y}</th>`).join('')}</tr>
+  return `<div class="gantt-wrap"><table class="gantt ${paintEdit ? 'editing' : ''} ${S.ui.planner.names === 'collapsed' ? 'names-collapsed' : ''}">
+    <thead><tr><th class="namecol" rowspan="2" style="padding:0 6px;vertical-align:bottom;padding-bottom:6px"><button class="namecaret" data-act="nameToggle" title="${S.ui.planner.names === 'collapsed' ? 'Show task names' : 'Hide task names'}" aria-label="Toggle task names"><svg viewBox="0 0 24 24" width="18" height="18"><path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="tlabel">Task <span class="muted small">(${tasks.length})</span></span></th>${yrs.map(y => `<th class="yr" colspan="${y.n}">${y.y}</th>`).join('')}</tr>
     <tr>${months.map(m => `<th class="mo ${m.endsWith('-01') ? 'jan' : ''} ${m === cym ? 'cur' : ''}">${MONTHS[+m.slice(5) - 1]}${m === cym ? '<br><span style="font-size:9px">TODAY</span>' : ''}</th>`).join('')}</tr></thead>
     <tbody>${rows}</tbody></table></div>`;
 }
@@ -126,6 +126,7 @@ function notesHTML() {
 function autoGrow(el) { const f = () => { el.style.height = 'auto'; el.style.height = el.scrollHeight + 2 + 'px'; }; f(); el.addEventListener('input', f); }
 
 ACT.pmode = el => { S.ui.planner.mode = el.dataset.m; save(); render(); };
+ACT.nameToggle = () => { const p = S.ui.planner; p.names = p.names === 'collapsed' ? 'full' : 'collapsed'; save(); render(); };
 ACT.paintmode = () => { paintEdit = !paintEdit; render(); };
 ACT.togglecat = el => { const h = S.ui.planner.hidden, k = el.dataset.k; S.ui.planner.hidden = h.includes(k) ? h.filter(x => x !== k) : [...h, k]; save(); render(); };
 ACT.openTask = el => openTask(el.dataset.id);

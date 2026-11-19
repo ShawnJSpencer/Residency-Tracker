@@ -171,15 +171,16 @@ document.addEventListener('change', e => { const el = e.target.closest('[data-tg
 /* ---------- rotation catalog ---------- */
 function blkRotHTML() {
   return `<div class="toolbar"><span class="small muted">The abbreviation shows inside each block. Min / max = residents needed on that service each block (for the coverage check).</span><div class="spacer"></div><button class="btn primary" data-act="rotAdd">+ Rotation</button></div>
-  <div class="card tablewrap" style="padding:0"><table class="t"><thead><tr><th>Abbr</th><th>Rotation</th><th>Category</th><th>Site</th><th>Color</th><th>Min</th><th>Max</th><th></th></tr></thead><tbody>${S.blocks.rotations.map(R => `<tr>
+  <div class="card tablewrap" style="padding:0"><table class="t"><thead><tr><th>Abbr</th><th>Rotation</th><th>Category</th><th>Site</th><th>Supervisor <span style="text-transform:none">(evaluator)</span></th><th>Color</th><th>Min</th><th>Max</th><th></th></tr></thead><tbody>${S.blocks.rotations.map(R => `<tr>
     <td><input type="text" data-bind="blocks.rotations:${R.id}:abbr" value="${esc(R.abbr)}" style="width:60px" maxlength="5" data-rerender></td>
     <td><input type="text" data-bind="blocks.rotations:${R.id}:name" value="${esc(R.name)}" style="width:100%;min-width:180px"></td>
     <td><select data-bind="blocks.rotations:${R.id}:cat">${ROT_CATS.map(c => `<option ${R.cat === c ? 'selected' : ''}>${c}</option>`).join('')}</select></td>
     <td><input type="text" data-bind="blocks.rotations:${R.id}:site" value="${esc(R.site)}" style="min-width:140px"></td>
+    <td><input type="text" list="supl" data-bind="blocks.rotations:${R.id}:supervisor" value="${esc(R.supervisor || '')}" placeholder="faculty name" style="min-width:140px"></td>
     <td><select data-bind="blocks.rotations:${R.id}:c" data-rerender style="background:var(--${R.c});color:#fff;font-weight:700">${[1, 2, 3, 4, 5, 6, 7, 8].map(i => `<option value="s${i}" ${R.c === 's' + i ? 'selected' : ''}>${['Blue', 'Orange', 'Aqua', 'Yellow', 'Pink', 'Green', 'Violet', 'Red'][i - 1]}</option>`).join('')}</select></td>
     <td><input type="number" min="0" data-bind="blocks.rotations:${R.id}:min" value="${R.min}" style="width:60px"></td>
     <td><input type="number" min="0" data-bind="blocks.rotations:${R.id}:max" value="${R.max}" style="width:60px"></td>
-    <td><button class="iconbtn" data-act="rotDel" data-id="${R.id}" title="Delete">✕</button></td></tr>`).join('')}</tbody></table></div>
+    <td><button class="iconbtn" data-act="rotDel" data-id="${R.id}" title="Delete">✕</button></td></tr>`).join('')}</tbody></table><datalist id="supl">${S.faculty.map(f => `<option value="${esc(f.name)}">`).join('')}</datalist></div>
   <div class="card" style="margin-top:14px"><h2>Block length</h2><div class="seg"><button class="${nBlocks() === 13 ? 'active' : ''}" data-act="blkMode" data-m="13">13 × 4-week blocks</button><button class="${nBlocks() === 12 ? 'active' : ''}" data-act="blkMode" data-m="12">12 calendar months</button></div><div class="small muted" style="margin-top:6px">Switching keeps blocks 1–12 in place; with 12 months, anything in block 13 is hidden.</div></div>`;
 }
 ACT.rotAdd = () => { S.blocks.rotations.push({ id: uid(), abbr: 'NEW', name: 'New rotation', cat: 'Other', c: 's1', site: '', min: '', max: '', notes: '' }); save(); render(); };

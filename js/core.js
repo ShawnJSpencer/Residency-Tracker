@@ -1,6 +1,6 @@
 /* Residency Tracker — core: state, helpers, router, modals */
 'use strict';
-const APP_VERSION = 'v2';
+const APP_VERSION = 'v3';
 const KEY = 'residencyTracker.v1';
 
 const CATS = {
@@ -182,6 +182,7 @@ const NAV = [
   ['recruit', 'Recruitment', '<path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm0 2c-4 0-8 2-8 5v1h16v-1c0-3-4-5-8-5z"/>'],
   ['meetings', 'CCC / PEC / Meetings', '<path d="M4 4h16v11H7l-3 3zM8 8h8v2H8z"/>'],
   ['blocks', 'Block Schedule', '<path d="M3 4h18v16H3zm2 2v3h4V6zm6 0v3h4V6zm6 0v3h2V6zM5 11v3h4v-3zm6 0v3h4v-3zm6 0v3h2v-3zM5 16v2h4v-2zm6 0v2h4v-2z"/>'],
+  ['evals', 'Evaluations', '<path d="M9 3h6v2h3a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h3zm1.5 13.6 6-6-1.4-1.4-4.6 4.6-2.1-2.1-1.4 1.4z"/>'],
   ['didactics', 'Didactics', '<path d="M12 3 1 9l11 6 9-4.9V17h2V9zM5 13.2V17l7 4 7-4v-3.8L12 17z"/>'],
   ['sep'],
   ['residents', 'Residents & Milestones', '<path d="M4 20V10h3v10zm6 0V4h3v16zm6 0v-7h3v7z"/>'],

@@ -25,8 +25,9 @@
 <script src="js/views-a.js"></script>
 <script src="js/views-b.js"></script>
 <script src="js/blocks.js"></script>
+<script src="js/evals.js"></script>
 <script>
-  load(); ensureBlocks(); applyTheme();
+  load(); ensureBlocks(); ensureEvals(); applyTheme();
   matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
   window.addEventListener('hashchange', route);
   if (!location.hash) location.hash = '#/' + (S.ui.view || 'dashboard'); else route();

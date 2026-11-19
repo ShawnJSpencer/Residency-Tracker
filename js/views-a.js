@@ -80,6 +80,7 @@ VIEWS.dashboard = {
       <div class="card"><h2>Accreditation readiness <span class="spacer"></span><a class="small" href="#/accred">Checklist →</a></h2>
         <div class="stat"><span class="num">${accDone}/${acc.length}</span><span class="cap">items done or N/A</span></div>
         <div style="margin-top:10px">${hbarList([...new Set(acc.map(a => a.area))].map((ar, i) => { const it = acc.filter(a => a.area === ar); return { label: ar, c: 's' + (i % 8 + 1), total: it.length, done: it.filter(a => a.status === 'done' || a.status === 'na').length, doing: it.filter(a => a.status === 'doing').length }; }))}</div></div>
+      ${evalDashCard()}
       <div class="card"><h2>Recruitment · ${esc(S.settings.cycle)} <span class="spacer"></span><a class="small" href="#/recruit">Recruitment →</a></h2>
         ${appl.length ? funnelHTML(appl) : `<div class="empty"><b>No applicants yet</b>ERAS opens in the fall; add or import applicants on the Recruitment page.</div>`}
         <div class="small muted" style="margin-top:6px">${S.interviewDays.length} interview day(s) set · ${S.faculty.filter(f => (f.roles || []).includes('Interviewer')).length} faculty interviewers</div></div>
@@ -251,3 +252,11 @@ ACT.restore = () => {
   inp.click();
 };
 ACT.resetAll = () => confirmBox('This erases everything on this device (applicants, residents, meetings, notes) and reloads the original planner. Download a backup first if unsure.', () => { localStorage.removeItem(KEY); load(); applyTheme(); render(); toast('Reset complete'); }, 'Erase & reset');
+
+function evalDashCard() {
+  ensureEvals();
+  const its = S.evals.items, t = todayISO(), soon = toISO(new Date(Date.now() + 14 * 864e5));
+  const od = its.filter(i => evStatus(i) === 'overdue'), up = its.filter(i => evStatus(i) === 'pending' && i.due <= soon);
+  const by = g => od.filter(i => evGroup(evType(i.typeId) || {}) === g).length;
+  return `<div class="card"><h2>Evaluations <span class="spacer"></span><a class="small" href="#/evals">Evaluations →</a></h2>${its.length ? `<div class="grid g2" style="gap:10px"><div class="stat"><span class="lbl">Overdue</span><span class="num" style="color:${od.length ? 'var(--bad)' : 'var(--good)'}">${od.length}</span><span class="cap">${by('of')} of residents · ${by('by')} by residents · ${by('fac')} faculty/program</span></div><div class="stat"><span class="lbl">Due in 14 days</span><span class="num">${up.length}</span></div></div>` : '<div class="empty" style="padding:16px"><b>Not set up yet</b>Generate each academic year\'s evaluations on the Evaluations page.</div>'}</div>`;
+}

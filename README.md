@@ -5,11 +5,12 @@ Planning and tracking app for the Utah Valley Hospital Psychiatry Residency star
 Plain HTML/CSS/JS with no build step and no dependencies. Host it with GitHub Pages (Settings → Pages → Deploy from branch `main`, folder `/`) or open `index.html` locally.
 
 ## Sections
-- **Startup Planner** – Elizabeth's GME Gantt (Oct 2026 – Jul 2028): category-colored bars, a today line, owners, date notes, statuses, checklists, and the Notes & Contacts sheet. Tap **Edit bars** to paint months. **Import Excel** re-reads an updated copy of her workbook and merges it in.
+- **Startup Planner** – Elizabeth's GME Gantt (Oct 2026 – Jul 2028): category-colored bars, a today line, owners, date notes, statuses, checklists, and the Notes & Contacts sheet. Tap **Edit bars** to paint months; the ‹ caret collapses the task-name column (handy on iPhone). **Import Excel** re-reads an updated copy of her workbook and merges it in.
 - **Calendar** – meetings, interview days, didactic Thursdays and key dates. Exports an `.ics` file for Outlook.
 - **Recruitment** – applicants (ERAS CSV import), interview days with schedules, a weighted scoring rubric, and the rank list.
 - **CCC / PEC / Meetings** – agendas, attendance, minutes and action items, plus a tentative academic-year cycle generator.
 - **Block Schedule** – 13 four-week blocks (or 12 months) per year by resident. Tap a block to choose a rotation or drag-paint with a brush; copy & stagger a class. Includes a coverage check (min/max per service), four-year requirement totals vs your targets, and an editable rotation list.
+- **Evaluations** – completion tracking for evaluations of residents (end of rotation, 360°, psychotherapy supervision, semiannual review, self-assessment, CSV, final summative), evaluations by residents (rotation, faculty, program, didactics, ACGME survey), and faculty/program evaluations. Generates each academic year from the roster, faculty and block schedule; tracker, by-person view, email reminders, editable types.
 - **Didactics** – the Thursday 1–5 pm grid. Its tracks follow the PGY ramp-up, and it counts sessions against the 48-Thursday target.
 - **Residents & Milestones** – roster by class, Psychiatry Milestones 2.0 ratings by CCC period, a cohort heatmap, and PRITE scores.
 - **Faculty** – roles (CCC, PEC, interviewer…), website photo/bio status, New Innovations training, and faculty-development hours.
