@@ -313,3 +313,12 @@ table.gantt{table-layout:fixed;width:100%;--nw:300px;min-width:calc(var(--nw) + 
   .nav{padding-top:calc(14px + env(safe-area-inset-top))}
   .main{padding-top:calc(20px + env(safe-area-inset-top))}
 }
+
+/* v7: panels never hide under the status bar / Dynamic Island, and the close button is always reachable */
+.drawer{height:100%;height:100dvh;padding-top:0;padding-bottom:calc(40px + env(safe-area-inset-bottom))}
+.drawer-head{position:sticky;top:0;z-index:5;background:var(--surface);margin:0 -20px 14px;padding:calc(12px + env(safe-area-inset-top)) 20px 12px;border-bottom:1px solid var(--line)}
+.scrim.center{padding-top:calc(5vh + env(safe-area-inset-top));padding-bottom:calc(5vh + env(safe-area-inset-bottom))}
+.modal-head{position:sticky;top:-5vh;z-index:5;background:var(--surface);margin:-20px -22px 14px;padding:16px 22px 12px;border-radius:14px 14px 0 0;border-bottom:1px solid var(--line)}
+.drawer-head .iconbtn,.modal-head .iconbtn{min-width:44px;min-height:44px;font-size:20px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--line-strong);border-radius:10px}
+/* iPhone zooms in when a text box is smaller than 16px — keep them at 16px on touch screens */
+@media (hover:none) and (pointer:coarse){input[type=text],input[type=email],input[type=date],input[type=time],input[type=number],input[type=search],input[type=month],select,textarea{font-size:16px!important}}

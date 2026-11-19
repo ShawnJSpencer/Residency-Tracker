@@ -15,6 +15,7 @@ const ROADMAP = {
     ['v4', 'Gantt: caret for short/full names; press-and-hold shows full name on iPhone'],
     ['v4', 'Anonymous Reports shell: QR code, resident form preview, flashing new-report alert'],
     ['v5', 'Roadmap & Checklists page'],
+    ['v7', 'iPhone: edit panels clear the status bar with a sticky close button; no zoom-in on text boxes; one press-and-hold bubble'],
     ['v6', 'iPad home-screen app fits below the status bar; faster scrolling & caret; name column no longer balloons on wide screens'],
   ],
   ideas: [

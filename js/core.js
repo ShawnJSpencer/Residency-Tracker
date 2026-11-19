@@ -1,6 +1,6 @@
 /* Residency Tracker — core: state, helpers, router, modals */
 'use strict';
-const APP_VERSION = 'v6';
+const APP_VERSION = 'v7';
 const KEY = 'residencyTracker.v1';
 
 const CATS = {

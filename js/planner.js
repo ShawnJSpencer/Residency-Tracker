@@ -135,7 +135,7 @@ ACT.nameToggle = el => {
 let lpBubble;
 function hideBubble() { if (lpBubble) { lpBubble.remove(); lpBubble = null; } }
 function showBubble(t, m, x, y) {
-  hideBubble();
+  hideBubble(); hideTip();
   const ms = [...t.months].sort(), when = ms.length ? (ms.length > 1 ? `${ymLabel(ms[0])} – ${ymLabel(ms.at(-1))}` : ymLabel(ms[0])) : 'Unscheduled';
   lpBubble = document.createElement('div'); lpBubble.className = 'lp-bubble';
   lpBubble.innerHTML = `<b>${esc(t.name)}</b><div>${when}${m && t.monthNotes?.[m] ? ' · ' + esc(t.monthNotes[m]) : ''}</div>${t.owner ? `<div>👤 ${esc(t.owner)}</div>` : ''}<div class="lp-hint">Tap to open details</div>`;
@@ -147,6 +147,7 @@ function showBubble(t, m, x, y) {
 }
 document.addEventListener('pointerdown', e => { if (lpBubble && !e.target.closest('.lp-bubble')) hideBubble(); }, true);
 function setupLongPress(wrap) {
+  if (wrap._lp) return; wrap._lp = true;
   let timer = null, sx = 0, sy = 0, fired = false;
   wrap.addEventListener('pointerdown', e => {
     if (e.pointerType === 'mouse' || paintEdit) return;

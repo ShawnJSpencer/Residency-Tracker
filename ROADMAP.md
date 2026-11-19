@@ -34,6 +34,7 @@ This file and the in-app **Roadmap & Checklists** page (`js/roadmap.js`) list th
 - [ ] Run an end-to-end test before the first residents arrive
 
 ## Built
+- v7: iPhone edit panels clear the status bar with a sticky close button; no zoom-in on text boxes; single press-and-hold bubble
 - v6: iPad home-screen app fits below the status bar; faster Gantt scrolling and caret; name column fixed width on wide screens
 - v5: Roadmap & Checklists page
 - v4: Gantt short/full names with caret + press-and-hold names on iPhone; Anonymous Reports shell (QR code, form preview, flashing alert)
