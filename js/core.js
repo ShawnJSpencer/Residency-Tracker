@@ -1,6 +1,6 @@
 /* Residency Tracker — core: state, helpers, router, modals */
 'use strict';
-const APP_VERSION = 'v5';
+const APP_VERSION = 'v6';
 const KEY = 'residencyTracker.v1';
 
 const CATS = {
@@ -168,8 +168,10 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('#scrim'
 let tipEl;
 function showTip(html, x, y) { if (!tipEl) { tipEl = document.createElement('div'); tipEl.className = 'tip'; document.body.appendChild(tipEl); } tipEl.innerHTML = html; tipEl.style.display = 'block'; const w = tipEl.offsetWidth; tipEl.style.left = Math.min(x + 12, innerWidth - w - 8) + 'px'; tipEl.style.top = (y + 14) + 'px'; }
 function hideTip() { if (tipEl) tipEl.style.display = 'none'; }
-document.addEventListener('pointerover', e => { const el = e.target.closest('[data-tip]'); if (el) showTip(el.dataset.tip, e.clientX, e.clientY); });
-document.addEventListener('pointermove', e => { const el = e.target.closest('[data-tip]'); if (el) showTip(el.dataset.tip, e.clientX, e.clientY); else hideTip(); });
+let tipOn = false;
+document.addEventListener('pointerover', e => { if (e.pointerType !== 'mouse') return; const el = e.target.closest('[data-tip]'); if (el) { showTip(el.dataset.tip, e.clientX, e.clientY); tipOn = true; } }, { passive: true });
+document.addEventListener('pointermove', e => { if (e.pointerType !== 'mouse') return; const el = e.target.closest('[data-tip]'); if (el) { showTip(el.dataset.tip, e.clientX, e.clientY); tipOn = true; } else if (tipOn) { hideTip(); tipOn = false; } }, { passive: true });
+document.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse' && tipOn) { hideTip(); tipOn = false; } }, { passive: true });
 
 /* ---------- router ---------- */
 const VIEWS = {}; // name -> {title, render()}
