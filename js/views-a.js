@@ -61,6 +61,8 @@ VIEWS.dashboard = {
     return `
     <div class="page-head"><div><h1>${esc(S.settings.programName)}</h1><div class="sub">${new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</div></div></div>
     ${reportBanner()}
+    ${dataSafetyNotices()}
+    ${setupGuideCard()}
     <div class="grid g4" style="margin-bottom:16px">
       <div class="card stat"><span class="lbl">Until first residents start</span><span class="num">${dStart > 0 ? dStart.toLocaleString() : '—'}</span><span class="cap">days · ${fmtDate(S.settings.programStart)}</span></div>
       <div class="card stat"><span class="lbl">Until Match Day</span><span class="num">${dMatch > 0 ? dMatch.toLocaleString() : '—'}</span><span class="cap">days · ${fmtDate(S.settings.matchDay)}</span></div>
@@ -132,8 +134,8 @@ function editEvent(id, isNew) {
     <label class="f">Date<input type="date" data-bind="events:${id}:date" value="${e.date}"></label><label class="f">End date (optional)<input type="date" data-bind="events:${id}:end" value="${e.end || ''}"></label>
     <label class="f">Category<select data-bind="events:${id}:type">${Object.entries(CATS).map(([k, c]) => `<option value="${k}" ${e.type === k ? 'selected' : ''}>${c.label}</option>`).join('')}</select></label>
     <label class="f full">Notes<textarea data-bind="events:${id}:notes">${esc(e.notes)}</textarea></label></div>
-    <div class="modal-foot"><button class="btn danger" id="evDel">Delete</button><div class="spacer"></div><button class="btn primary" data-act="close">Save</button></div>`, { onClose: () => { if (!e.title) S.events = S.events.filter(x => x !== e); save(); render(); } });
-  $('#evDel').onclick = () => { S.events = S.events.filter(x => x !== e); save(); closeModal(); render(); };
+    <div class="modal-foot"><button class="btn danger" id="evDel">Delete</button><div class="spacer"></div><button class="btn primary" data-act="close">Done</button></div>`, { onClose: () => { if (!e.title) S.events = S.events.filter(x => x !== e); save(); render(); } });
+  $('#evDel').onclick = () => { closeModal(); withUndo('Key date deleted', () => { S.events = S.events.filter(x => x !== e); }); };
 }
 ACT.icsExport = () => {
   const dt = s => s.replace(/-/g, ''), stamp = new Date().toISOString().replace(/[-:]/g, '').slice(0, 15) + 'Z';
@@ -177,7 +179,7 @@ function editFac(id, isNew) {
     <div class="f full" style="display:flex;flex-wrap:wrap;gap:8px 18px;flex-direction:row">${[['photo', 'Photo collected'], ['bio', 'Bio collected'], ['niTrained', 'New Innovations trained'], ['intTrained', 'Interviewer training done']].map(([k, l]) => `<label class="check"><input type="checkbox" data-bind="faculty:${id}:${k}" ${f[k] ? 'checked' : ''}> ${l}</label>`).join('')}</div>
     <label class="f">Faculty development hours<input type="number" step="0.5" data-bind="faculty:${id}:fdHours" value="${f.fdHours || 0}"></label>
     <label class="f full">Notes<textarea data-bind="faculty:${id}:notes">${esc(f.notes)}</textarea></label></div>
-    <div class="modal-foot"><button class="btn danger" id="fDel">Remove</button><div class="spacer"></div><button class="btn primary" data-act="close">Save</button></div>`, { onClose: () => { if (!f.name) S.faculty = S.faculty.filter(x => x !== f); save(); render(); } });
+    <div class="modal-foot"><button class="btn danger" id="fDel">Remove</button><div class="spacer"></div><button class="btn primary" data-act="close">Done</button></div>`, { onClose: () => { if (!f.name) S.faculty = S.faculty.filter(x => x !== f); save(); render(); } });
   $$('[data-role]').forEach(cb => cb.onchange = () => { f.roles = $$('[data-role]').filter(c => c.checked).map(c => c.dataset.role); save(); });
   $('#fDel').onclick = () => confirmBox(`Remove ${esc(f.name || 'this person')}?`, () => { S.faculty = S.faculty.filter(x => x !== f); save(); render(); }, 'Remove');
 }
@@ -206,8 +208,8 @@ function editAcc(id) {
     <label class="f">Status<select data-bind="accreditation:${id}:status">${Object.entries(ACC_ST).map(([k, v]) => `<option value="${k}" ${a.status === k ? 'selected' : ''}>${v}</option>`).join('')}</select></label>
     <label class="f">Owner<input type="text" data-bind="accreditation:${id}:owner" value="${esc(a.owner)}"></label><label class="f">Due<input type="date" data-bind="accreditation:${id}:due" value="${a.due}"></label>
     <label class="f full">Notes<textarea data-bind="accreditation:${id}:notes">${esc(a.notes)}</textarea></label></div>
-    <div class="modal-foot"><button class="btn danger" id="aDel">Delete</button><div class="spacer"></div><button class="btn primary" data-act="close">Save</button></div>`, { onClose: () => { if (!a.item) S.accreditation = S.accreditation.filter(x => x !== a); save(); render(); } });
-  $('#aDel').onclick = () => { S.accreditation = S.accreditation.filter(x => x !== a); save(); closeModal(); render(); };
+    <div class="modal-foot"><button class="btn danger" id="aDel">Delete</button><div class="spacer"></div><button class="btn primary" data-act="close">Done</button></div>`, { onClose: () => { if (!a.item) S.accreditation = S.accreditation.filter(x => x !== a); save(); render(); } });
+  $('#aDel').onclick = () => { closeModal(); withUndo('Checklist item deleted', () => { S.accreditation = S.accreditation.filter(x => x !== a); }); };
 }
 
 /* ---------- Settings ---------- */
@@ -221,7 +223,7 @@ VIEWS.settings = {
         <label class="f full">Program name<input type="text" ${b('programName')} value="${esc(s.programName)}" data-rerender></label>
         <label class="f">First residents start<input type="date" ${b('programStart')} value="${s.programStart}"></label>
         <label class="f">Match Day<input type="date" ${b('matchDay')} value="${s.matchDay}"></label>
-        <label class="f">Positions per class<input type="number" min="1" max="30" ${b('perClass')} value="${s.perClass}"></label>
+        <label class="f">Positions per class<input type="number" min="1" max="30" ${b('perClass')} value="${s.perClass}" onchange="ensureRoadmap();S.roadmap.checked['setup:perclass']=true;save()"></label>
         <label class="f">Current recruitment cycle<input type="text" ${b('cycle')} value="${esc(s.cycle)}"></label>
         <label class="f">Planner starts<input type="month" ${b('rangeStart')} value="${s.rangeStart}"></label>
         <label class="f">Planner ends<input type="month" ${b('rangeEnd')} value="${s.rangeEnd}"></label>
@@ -232,6 +234,9 @@ VIEWS.settings = {
         <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-start">
           <button class="btn primary" data-act="importXlsx">Import Elizabeth's Excel tracker (.xlsx)</button>
           <span class="small muted">Reads the Gantt sheet (colored months, owners, date notes) and the Notes sheet. Merge keeps your statuses & checklists.</span>
+          <div class="small" style="font-weight:600">Last backup: ${S.meta.lastBackup ? fmtDate(S.meta.lastBackup) + ` (${daysSince(S.meta.lastBackup)} day${daysSince(S.meta.lastBackup) === 1 ? '' : 's'} ago)` : 'never'}</div>
+          <button class="btn primary" data-act="shareBackup">Send backup to another device…</button>
+          <span class="small muted">Opens the share sheet (AirDrop, Messages, Mail, Files). On the other device, open this app → Settings → Restore from backup.</span>
           <button class="btn" data-act="backup">Download backup (.json)</button>
           <button class="btn" data-act="restore">Restore from backup…</button>
           <button class="btn" data-act="plannerCSV">Export planner (.csv)</button>
@@ -243,7 +248,7 @@ VIEWS.settings = {
   },
   after() { $('#themeSel').addEventListener('change', () => setTimeout(applyTheme, 0)); },
 };
-ACT.backup = () => { download(`residency-tracker-backup-${todayISO()}.json`, JSON.stringify(S, null, 1), 'application/json'); };
+ACT.backup = () => { download(`residency-tracker-backup-${todayISO()}.json`, backupJSON(), 'application/json'); markBackedUp(); render(); };
 ACT.restore = () => {
   const inp = document.createElement('input'); inp.type = 'file'; inp.accept = '.json,application/json';
   inp.onchange = async () => {

@@ -1,6 +1,6 @@
 /* Residency Tracker — core: state, helpers, router, modals */
 'use strict';
-const APP_VERSION = 'v7';
+const APP_VERSION = 'v8';
 const KEY = 'residencyTracker.v1';
 
 const CATS = {
@@ -96,7 +96,7 @@ function seedState() {
     v: 1,
     settings: { theme: 'auto', programName: 'Utah Valley Hospital Psychiatry Residency', programStart: '2028-07-01', matchDay: '2028-03-17', perClass: 4, rangeStart: '2026-10', rangeEnd: '2028-07', cycle: 'Match 2028' },
     tasks, applicants: [], interviewDays: [], rubric: defaultRubric(), rankOrder: [], meetings: [], faculty: [], residents: [],
-    accreditation: defaultAccreditation(), events: defaultEvents(), didactics: { sessions: {}, cancelled: {} },
+    accreditation: defaultAccreditation(), events: defaultEvents(), didactics: { sessions: {}, cancelled: {} }, meta: { lastBackup: '', backupSnooze: '', tabSnooze: '' },
     ui: { view: 'dashboard', planner: { mode: 'gantt', q: '', cat: '', owner: '', status: '', hideDone: false, sort: 'sheet', group: false, hidden: [] }, recruitTab: 'applicants', resTab: 'roster', calMonth: curYM(), didAY: 2028, mtgFilter: '' },
   };
 }
@@ -109,6 +109,8 @@ function load() {
   for (const k in base) if (S[k] === undefined) S[k] = base[k];
   S.settings = { ...base.settings, ...S.settings };
   S.ui = { ...base.ui, ...S.ui, planner: { ...base.ui.planner, ...(S.ui || {}).planner } };
+  S.meta = { ...base.meta, ...(S.meta || {}) };
+  ensurePositions();
 }
 let saveT;
 function save(now) {
@@ -158,9 +160,36 @@ function openModal(html, opts = {}) {
   return sc;
 }
 function closeModal() { const s = $('#scrim'); if (s) { s.remove(); } }
+/* ---------- stable resident positions ----------
+   Schedules and evaluations attach to a position key ("2028#0") that is assigned once
+   and never recomputed from alphabetical order. */
+const posLetter = i => String.fromCharCode(65 + i);
+function assignPos(r) { const taken = new Set(S.residents.filter(x => x !== r && x.classYear === r.classYear).map(x => x.posKey)); let i = 0; while (taken.has(`${r.classYear}#${i}`)) i++; r.posKey = `${r.classYear}#${i}`; }
+function ensurePositions() { const by = {}; S.residents.filter(r => !r.posKey || !r.posKey.startsWith(r.classYear + '#')).forEach(r => (by[r.classYear] ||= []).push(r)); Object.values(by).forEach(list => list.sort((a, b) => a.name.localeCompare(b.name)).forEach(r => { r.posKey = ''; assignPos(r); })); }
+function classPositions(cy) {
+  const per = +S.settings.perClass || 1, rs = S.residents.filter(r => r.classYear === cy);
+  const n = Math.max(per, ...rs.map(r => +(r.posKey || '').split('#')[1] + 1 || 0));
+  return [...Array(n)].map((_, i) => { const key = `${cy}#${i}`; return { key, i, r: rs.find(x => x.posKey === key) }; });
+}
+/* ---------- undo ---------- */
+let undoT;
+function withUndo(label, fn) { const snap = JSON.stringify(S); fn(); save(true); render(); showUndo(label, snap); }
+function showUndo(label, snap) {
+  $('#undoToast')?.remove(); clearTimeout(undoT);
+  const t = document.createElement('div'); t.className = 'toast undo'; t.id = 'undoToast';
+  t.innerHTML = `<span>${esc(label)}</span><button type="button">Undo</button>`;
+  t.querySelector('button').onclick = () => { S = JSON.parse(snap); save(true); applyTheme(); closeModal(); render(); t.remove(); toast('Restored'); };
+  document.body.appendChild(t); undoT = setTimeout(() => t.remove(), 8000);
+}
+/* ---------- device / data safety ---------- */
+const isIOS = () => /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const isStandalone = () => navigator.standalone === true || matchMedia('(display-mode: standalone)').matches;
+const daysSince = iso => iso ? daysBetween(iso, todayISO()) : Infinity;
+function backupJSON() { return JSON.stringify(S, null, 1); }
+function markBackedUp() { S.meta.lastBackup = todayISO(); save(true); }
 function confirmBox(msg, onYes, yesLabel = 'Delete') {
   openModal(`<div class="modal-head"><h2>Are you sure?</h2></div><p>${msg}</p><div class="modal-foot"><button class="btn" data-act="close">Cancel</button><button class="btn danger" id="cfy">${esc(yesLabel)}</button></div>`);
-  $('#cfy').onclick = () => { closeModal(); onYes(); };
+  $('#cfy').onclick = () => { closeModal(); withUndo(/delete/i.test(yesLabel) ? 'Deleted' : /remove/i.test(yesLabel) ? 'Removed' : /erase|reset/i.test(yesLabel) ? 'Reset' : 'Done', onYes); };
 }
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('#scrim')) { const s = $('#scrim'); const oc = s._onClose; closeModal(); oc && oc(); } });
 
@@ -197,10 +226,18 @@ const NAV = [
 ];
 function renderNav() {
   const v = S.ui.view;
-  $('#nav').innerHTML = `<div class="brand"><b>Residency Tracker</b><small>${esc(S.settings.programName)}</small></div>` +
+  $('#nav').innerHTML = `<div class="brand"><b>Residency Tracker</b><small>${esc(S.settings.programName)}</small></div><button class="nav-all" data-act="navAll" aria-label="All sections"><svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M4 4h6v6H4zm10 0h6v6h-6zM4 14h6v6H4zm10 0h6v6h-6z"/></svg>All</button>` +
     NAV.map(n => { if (n[0] === 'sep') return '<div class="sep"></div>'; const b = n[0] === 'reports' && typeof reportsNew === 'function' ? reportsNew() : 0; const rc = n[0] === 'roadmap' && typeof roadmapOpen === 'function' ? roadmapOpen() : 0; return `<a href="#/${n[0]}" class="${v === n[0] ? 'active' : ''} ${b ? 'has-alert' : ''}"><svg viewBox="0 0 24 24" fill="currentColor">${n[2]}</svg>${n[1]}${b ? `<span class="nav-badge">${b}</span>` : ''}${rc ? `<span class="nav-count">${rc}</span>` : ''}</a>`; }).join('') +
     `<div class="foot">${APP_VERSION} · data saved on this device</div>`;
+  const nav = $('#nav'), a = nav.querySelector('a.active');
+  if (a && nav.scrollWidth > nav.clientWidth + 4) nav.scrollLeft = a.offsetLeft - nav.clientWidth / 2 + a.offsetWidth / 2;
 }
+ACT.navAll = () => {
+  const groups = [[]]; NAV.forEach(n => n[0] === 'sep' ? groups.push([]) : groups.at(-1).push(n));
+  const names = ['Overview', 'Program', 'People & accreditation', 'App'];
+  openModal(`<div class="modal-head"><h2>All sections</h2><button class="iconbtn" data-act="close">✕</button></div>${groups.map((g, i) => `<div class="section-t">${names[i] || ''}</div><div class="navgrid">${g.map(n => `<a href="#/${n[0]}" class="navtile ${S.ui.view === n[0] ? 'active' : ''}" data-act="close"><svg viewBox="0 0 24 24" fill="currentColor">${n[2]}</svg><span>${n[1]}</span></a>`).join('')}</div>`).join('')}`);
+  $$('.navtile').forEach(t => t.onclick = () => { closeModal(); location.hash = t.getAttribute('href'); });
+};
 function render() {
   const v = VIEWS[S.ui.view] ? S.ui.view : 'dashboard';
   S.ui.view = v;
@@ -208,6 +245,7 @@ function render() {
   const main = $('#main');
   const sx = main.querySelector('.gantt-wrap')?.scrollLeft, sy = main.querySelector('.gantt-wrap')?.scrollTop;
   main.innerHTML = VIEWS[v].render();
+  if (typeof restoreToolbar === 'function') restoreToolbar();
   const nr = typeof reportsNew === 'function' ? reportsNew() : 0; document.title = `${nr ? `(${nr}) New report · ` : ''}${VIEWS[v].title} · Residency Tracker`;
   VIEWS[v].after && VIEWS[v].after({ sx, sy });
 }
@@ -232,3 +270,9 @@ function onBind(e) {
 }
 document.addEventListener('input', onBind);
 document.addEventListener('change', onBind);
+
+/* phone: toolbars collapse their filters behind a "Filters" button */
+let tbOpenView = null;
+ACT.tbToggle = el => { const tb = el.closest('.toolbar'); tb.classList.toggle('open'); const open = tb.classList.contains('open'); el.classList.toggle('on', open); tbOpenView = open ? S.ui.view : null; };
+function restoreToolbar() { if (tbOpenView !== S.ui.view) return; const tb = $('#main .toolbar .tb-more')?.closest('.toolbar'); if (tb) { tb.classList.add('open'); tb.querySelector('[data-act="tbToggle"]')?.classList.add('on'); } }
+if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});

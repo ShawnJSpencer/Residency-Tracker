@@ -34,6 +34,7 @@ This file and the in-app **Roadmap & Checklists** page (`js/roadmap.js`) list th
 - [ ] Run an end-to-end test before the first residents arrive
 
 ## Built
+- v8: stable resident IDs (schedules/evaluations stay with the person), backup reminders + share-to-device, Safari-tab warning, Undo after deletes, "Done" instead of fake "Save", iPhone "All" menu + collapsible filters + larger tap targets, first-run setup guide, iPhone home-screen spacing
 - v7: iPhone edit panels clear the status bar with a sticky close button; no zoom-in on text boxes; single press-and-hold bubble
 - v6: iPad home-screen app fits below the status bar; faster Gantt scrolling and caret; name column fixed width on wide screens
 - v5: Roadmap & Checklists page

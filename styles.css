@@ -23,12 +23,13 @@
   --shadow:0 1px 2px rgba(0,0,0,.4),0 4px 16px rgba(0,0,0,.3);
 }
 *{box-sizing:border-box}
-html,body{margin:0;height:100%}
+html,body{margin:0}
+body{min-height:100vh;min-height:100dvh}
 body{font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);-webkit-text-size-adjust:100%}
 button,input,select,textarea{font:inherit;color:inherit}
 a{color:var(--accent)}
 .app{display:flex;min-height:100vh;max-width:100vw;overflow-x:clip}
-html,body{overflow-x:hidden;overscroll-behavior-x:none}
+html,body{overflow-x:clip;overscroll-behavior-x:none}
 .grid>*{min-width:0}
 /* ---------- nav ---------- */
 .nav{width:212px;flex:none;background:var(--nav);color:var(--nav-ink);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;padding:14px 10px;gap:2px;overflow-y:auto}
@@ -322,3 +323,47 @@ table.gantt{table-layout:fixed;width:100%;--nw:300px;min-width:calc(var(--nw) + 
 .drawer-head .iconbtn,.modal-head .iconbtn{min-width:44px;min-height:44px;font-size:20px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--line-strong);border-radius:10px}
 /* iPhone zooms in when a text box is smaller than 16px — keep them at 16px on touch screens */
 @media (hover:none) and (pointer:coarse){input[type=text],input[type=email],input[type=date],input[type=time],input[type=number],input[type=search],input[type=month],select,textarea{font-size:16px!important}}
+
+/* ---------- v8 ---------- */
+.toast.undo{display:flex;align-items:center;gap:14px;padding:10px 10px 10px 16px;bottom:calc(20px + env(safe-area-inset-bottom))}
+.toast.undo button{background:var(--accent);color:#fff;border:0;border-radius:8px;padding:8px 14px;font-weight:700;cursor:pointer}
+.notice{background:var(--accent-soft);border:1px solid var(--accent);border-radius:12px;padding:12px 14px;margin-bottom:12px;font-size:13.5px}
+.notice.warn{background:var(--warn-soft);border-color:var(--warn)}
+.notice-actions{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.guide-row .gnum{width:26px;height:26px;border-radius:50%;flex:none;display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:12.5px;background:var(--surface-2);border:1px solid var(--line-strong);color:var(--ink-2)}
+.guide-row.done .gnum{background:var(--good);border-color:var(--good);color:#fff}
+.guide-row.done b{color:var(--ink-3);text-decoration:line-through;font-weight:500}
+.guide-row.next .gnum{background:var(--accent);border-color:var(--accent);color:#fff}
+.nav-all{display:none}
+.navgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.navtile{display:flex;align-items:center;gap:10px;padding:12px;border:1px solid var(--line-strong);border-radius:10px;text-decoration:none;color:var(--ink);font-weight:600;min-height:48px}
+.navtile svg{width:20px;height:20px;flex:none;color:var(--accent)}
+.navtile.active{background:var(--accent-soft);border-color:var(--accent)}
+.tb-more{display:contents}
+.phone-only{display:none!important}
+@media (max-width:860px){
+  .nav{padding-top:calc(env(safe-area-inset-top) + 12px);padding-bottom:10px}
+  .nav-all{display:inline-flex;align-items:center;gap:6px;flex:none;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;border-radius:8px;padding:7px 10px;font-weight:600;font-size:13px}
+  .main{padding-bottom:calc(60px + env(safe-area-inset-bottom))}
+}
+@media (max-width:700px){
+  .phone-only{display:inline-flex!important}
+  .phone-hide{display:none!important}
+  .toolbar .tb-more{display:none}
+  .toolbar.open .tb-more{display:flex;flex-wrap:wrap;gap:8px;width:100%}
+  .toolbar.open .tb-more input[type=search],.toolbar.open .tb-more select{flex:1 1 45%}
+  .toolbar .spacer{display:none}
+  .legend{gap:4px 10px;font-size:12px}
+  .page-head{margin-bottom:10px}
+}
+/* bigger touch targets on touch screens */
+@media (hover:none) and (pointer:coarse){
+  .btn{min-height:42px}
+  .btn.sm{min-height:36px;padding:6px 12px}
+  .iconbtn{min-width:40px;min-height:40px}
+  .chip.click{padding:5px 11px;font-size:12.5px}
+  input[type=checkbox]{width:20px;height:20px}
+  .small{font-size:12.5px}
+  .seg button{padding:9px 13px}
+}
+@media (max-width:860px){.nav-all{position:sticky;left:0;z-index:3;background:var(--nav);box-shadow:8px 0 10px -4px var(--nav)}}

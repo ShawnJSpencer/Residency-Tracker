@@ -35,7 +35,7 @@ function applicantsHTML() {
   const list = all.filter(a => (!q || [a.name, a.school, a.aamc, a.email].join(' ').toLowerCase().includes(q)) && (!f || a.status === f));
   const day = id => S.interviewDays.find(d => d.id === id);
   return `<div class="grid" style="grid-template-columns:minmax(0,1fr) 300px;align-items:start" id="agrid">
-    <div><div class="toolbar"><input type="search" id="aq" placeholder="Search name, school, AAMC ID…" value="${esc(S.ui.aq || '')}"><select id="afilter"><option value="">All statuses</option>${[...APP_STAGES, ...APP_EXITS].map(s => `<option ${f === s ? 'selected' : ''}>${s}</option>`).join('')}</select><div class="spacer"></div><button class="btn" data-act="importApps">Import ERAS CSV</button><button class="btn" data-act="appCSV">Export CSV</button><button class="btn primary" data-act="addApp">+ Applicant</button></div>
+    <div><div class="toolbar"><button class="btn phone-only" data-act="tbToggle">☰ Filters${q || f ? ' (' + [q, f].filter(Boolean).length + ')' : ''}</button><div class="tb-more"><input type="search" id="aq" placeholder="Search name, school, AAMC ID…" value="${esc(S.ui.aq || '')}"><select id="afilter"><option value="">All statuses</option>${[...APP_STAGES, ...APP_EXITS].map(s => `<option ${f === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div><div class="spacer"></div><div class="tb-more"><button class="btn" data-act="importApps">Import ERAS CSV</button><button class="btn" data-act="appCSV">Export CSV</button></div><button class="btn primary" data-act="addApp">+ Applicant</button></div>
     <div class="card tablewrap" style="padding:0">${list.length ? `<table class="t"><thead><tr><th>Applicant</th><th>School</th><th>Status</th><th>Interview</th><th>Score</th><th>Flags</th></tr></thead><tbody>${list.map(a => { const sc = applicantScore(a); const d = day(a.dayId); return `<tr class="click" data-act="editApp" data-id="${a.id}"><td><b>${esc(a.name)}</b><div class="small muted">${esc(a.degree || '')}${a.aamc ? ' · ' + esc(a.aamc) : ''}</div></td><td>${esc(a.school || '')}</td><td><span class="chip ${APP_EXITS.includes(a.status) ? 'st-na' : a.status === 'Matched' ? 'st-done' : 'st-doing'}">${esc(a.status)}</span></td><td class="small">${d ? fmtDate(d.date, { noYear: 1 }) : '—'}</td><td><b>${sc ? round1(sc) : '—'}</b><span class="small muted"> ${a.scores?.length ? `(${a.scores.length})` : ''}</span></td><td class="small">${[a.signal ? '📶 Signal' : '', a.ties ? '🏔 Utah ties' : '', a.visa ? 'Visa' : '', a.rotated ? 'Rotated here' : ''].filter(Boolean).join(' · ')}</td></tr>`; }).join('')}</tbody></table>` : `<div class="empty"><b>${all.length ? 'No matches' : 'No applicants yet'}</b>${all.length ? 'Try a different search.' : 'Add applicants one at a time or import a CSV exported from ERAS / Thalamus.'}</div>`}</div></div>
     <div class="card"><h2>Pipeline</h2>${funnelHTML(all)}</div></div><style>@media (max-width:1000px){#agrid{grid-template-columns:1fr!important}}</style>`;
 }
@@ -58,7 +58,7 @@ function editApp(id, isNew) {
     <div class="tablewrap"><table class="t ms"><thead><tr><th>Interviewer</th>${S.rubric.map(r => `<th title="${esc(r.name)} (weight ${r.weight})" style="white-space:normal;min-width:70px;font-size:10px">${esc(r.name)}</th>`).join('')}<th>Avg</th><th></th></tr></thead><tbody>${scoreRows()}</tbody></table></div>
     <datalist id="facl">${fac.map(n => `<option value="${esc(n)}">`).join('')}</datalist>
     <button class="btn sm" data-act="scAdd" style="margin-top:6px">+ Add interviewer score</button>
-    <div class="modal-foot"><button class="btn danger" id="apDel">Delete</button><div class="spacer"></div><button class="btn primary" data-act="close">Save</button></div>`;
+    <div class="modal-foot"><button class="btn danger" id="apDel">Delete</button><div class="spacer"></div><button class="btn primary" data-act="close">Done</button></div>`;
   const sc = openModal(html(), { wide: true, onClose: () => { if (!a.name) S.applicants = S.applicants.filter(x => x !== a); save(); render(); } });
   const refresh = () => { const mm = sc.querySelector('.modal'); const st = sc.scrollTop; mm.innerHTML = html(); sc.scrollTop = st; wire(); };
   const wire = () => {
@@ -102,7 +102,7 @@ function editInterviewDay(id) {
     <label class="f full">Day schedule / outline<textarea rows="7" data-bind="interviewDays:${id}:itinerary" style="font-family:ui-monospace,Menlo,monospace;font-size:13px">${esc(d.itinerary)}</textarea></label>
     <label class="f full">Notes (logistics, food, rooms, Zoom links)<textarea data-bind="interviewDays:${id}:notes">${esc(d.notes)}</textarea></label></div>
     <div class="section-t">Applicants (${booked.length})</div><div class="small">${booked.map(a => `<a href="#" data-act="editApp" data-id="${a.id}">${esc(a.name)}</a>`).join(' · ') || '<span class="muted">Assign applicants from their applicant record.</span>'}</div>
-    <div class="modal-foot"><button class="btn danger" id="dDel">Delete</button><div class="spacer"></div><button class="btn primary" data-act="close">Save</button></div>`, { onClose: () => { save(); render(); } });
+    <div class="modal-foot"><button class="btn danger" id="dDel">Delete</button><div class="spacer"></div><button class="btn primary" data-act="close">Done</button></div>`, { onClose: () => { save(); render(); } });
   $$('[data-iv]').forEach(cb => cb.onchange = () => { d.interviewers = $$('[data-iv]').filter(c => c.checked).map(c => c.dataset.iv); save(); });
   $('#dDel').onclick = () => confirmBox('Delete this interview day? Assigned applicants will be unassigned.', () => { S.interviewDays = S.interviewDays.filter(x => x !== d); S.applicants.forEach(a => { if (a.dayId === d.id) a.dayId = ''; }); save(); render(); });
 }
@@ -112,7 +112,7 @@ function rubricHTML() {
     <table class="t"><thead><tr><th>Criterion</th><th>What to look for</th><th style="width:90px">Weight</th><th></th></tr></thead><tbody>${S.rubric.map(r => `<tr><td><input type="text" data-bind="rubric:${r.id}:name" value="${esc(r.name)}" style="width:100%"></td><td><input type="text" data-bind="rubric:${r.id}:desc" value="${esc(r.desc)}" style="width:100%"></td><td><input type="number" step="0.5" min="0" data-bind="rubric:${r.id}:weight" value="${r.weight}" style="width:70px"></td><td><button class="iconbtn" data-act="rubDel" data-id="${r.id}">✕</button></td></tr>`).join('')}</tbody></table></div>`;
 }
 ACT.rubAdd = () => { S.rubric.push({ id: uid(), name: 'New criterion', weight: 1, desc: '' }); save(); render(); };
-ACT.rubDel = el => { S.rubric = S.rubric.filter(r => r.id !== el.dataset.id); save(); render(); };
+ACT.rubDel = el => withUndo('Criterion deleted', () => { S.rubric = S.rubric.filter(r => r.id !== el.dataset.id); });
 ACT.rubReset = () => confirmBox('Replace the rubric with the defaults? Existing scores on removed criteria will no longer count.', () => { S.rubric = defaultRubric(); save(); render(); }, 'Reset');
 function rankPool() {
   const pool = S.applicants.filter(a => a.cycle === S.settings.cycle && ['Interviewed', 'Ranked', 'Do not rank', 'Matched'].includes(a.status));
@@ -172,7 +172,7 @@ function editMeeting(id) {
     <div class="section-t">Action items</div>
     ${(m.actions || []).map((a, i) => `<div class="cl ${a.done ? 'done' : ''}"><input type="checkbox" ${a.done ? 'checked' : ''} data-ai="${i}" data-k="done"><input type="text" value="${esc(a.t)}" data-ai="${i}" data-k="t"><input type="text" value="${esc(a.owner || '')}" data-ai="${i}" data-k="owner" placeholder="Owner" style="width:110px;flex:none"><input type="date" value="${a.due || ''}" data-ai="${i}" data-k="due" style="flex:none"><button class="iconbtn" data-act="aiDel" data-i="${i}">✕</button></div>`).join('')}
     <button class="btn sm" data-act="aiAdd">+ Action item</button>
-    <div class="modal-foot"><button class="btn danger" id="mDel">Delete</button><button class="btn" data-act="mtgPrint">Print agenda</button><div class="spacer"></div><button class="btn primary" data-act="close">Save</button></div>`;
+    <div class="modal-foot"><button class="btn danger" id="mDel">Delete</button><button class="btn" data-act="mtgPrint">Print agenda</button><div class="spacer"></div><button class="btn primary" data-act="close">Done</button></div>`;
   const sc = openModal(html(), { wide: true, onClose: () => { save(); render(); } });
   const refresh = () => { sc.querySelector('.modal').innerHTML = html(); wire(); };
   const wire = () => {
@@ -293,7 +293,7 @@ function rosterHTML() {
   const classes = [...new Set(S.residents.map(r => r.classYear))].sort();
   return classes.map(cy => { const rs = S.residents.filter(r => r.classYear === cy), p = pgyOf(rs[0]); return `<div class="card" style="margin-bottom:14px"><h2>Class of ${cy + 4} <span class="chip">${p < 1 ? 'Incoming' : p > 4 ? 'Graduated' : 'PGY-' + p}</span><span class="spacer"></span><span class="small muted">started ${ayLabel(cy)}</span></h2><div class="grid g3">${rs.map(r => { const last = periodsFor(r).filter(pp => r.milestones?.[pp] && Object.values(r.milestones[pp]).some(v => v !== '')).pop(); const a = last ? avg(Object.values(r.milestones[last]).filter(v => v !== '').map(Number)) : null; return `<div class="li" style="cursor:pointer;border:1px solid var(--line);border-radius:8px;padding:10px" data-act="openRes" data-id="${r.id}"><div class="grow"><b>${esc(r.name)}</b><div class="small muted">${esc(r.school || '')}${r.advisor ? ' · advisor ' + esc(r.advisor) : ''}</div></div>${a != null ? `<div style="text-align:right"><b>${round1(a)}</b><div class="small muted">${periodShort(last)}</div></div>` : '<span class="small muted">no ratings</span>'}</div>`; }).join('')}</div></div>`; }).join('');
 }
-ACT.fromMatched = () => { const m = S.applicants.filter(a => a.status === 'Matched' && !S.residents.some(r => r.fromApp === a.id)); if (!m.length) return toast('No applicants marked “Matched” yet'); const cy = acadYear(S.settings.programStart) > acadYear(todayISO()) ? acadYear(S.settings.programStart) : acadYear(todayISO()) + 1; m.forEach(a => S.residents.push({ id: uid(), fromApp: a.id, name: a.name, email: a.email, school: a.school, classYear: cy, advisor: '', notes: '', milestones: {}, prite: [] })); save(); render(); toast(`${m.length} resident(s) added`); };
+ACT.fromMatched = () => { const m = S.applicants.filter(a => a.status === 'Matched' && !S.residents.some(r => r.fromApp === a.id)); if (!m.length) return toast('No applicants marked “Matched” yet'); const cy = acadYear(S.settings.programStart) > acadYear(todayISO()) ? acadYear(S.settings.programStart) : acadYear(todayISO()) + 1; m.forEach(a => { const nr = { id: uid(), fromApp: a.id, name: a.name, email: a.email, school: a.school, classYear: cy, advisor: '', notes: '', milestones: {}, prite: [] }; S.residents.push(nr); assignPos(nr); }); save(); render(); toast(`${m.length} resident(s) added`); };
 ACT.addRes = () => { const r = { id: uid(), name: '', email: '', school: '', classYear: acadYear(S.settings.programStart), advisor: '', notes: '', milestones: {}, prite: [] }; S.residents.push(r); openRes(r.id, true); };
 ACT.openRes = el => openRes(el.dataset.id);
 function msChart(r) {
@@ -332,11 +332,11 @@ function openRes(id, isNew) {
     <div class="section-t">PRITE</div>
     ${r.prite.map((p, i) => `<div class="mrow"><input type="number" value="${p.year}" data-pr="${i}" data-k="year" style="width:90px;flex:none" placeholder="Year"><input type="number" value="${p.score ?? ''}" data-pr="${i}" data-k="score" placeholder="Score"><input type="number" value="${p.pct ?? ''}" data-pr="${i}" data-k="pct" placeholder="Percentile vs PGY"><button class="iconbtn" data-act="prDel" data-i="${i}">✕</button></div>`).join('')}
     <button class="btn sm" data-act="prAdd">+ PRITE result</button>
-    <div class="modal-foot"><button class="btn danger" id="rDel">Remove resident</button><div class="spacer"></div><button class="btn primary" data-act="close">Save</button></div>`;
+    <div class="modal-foot"><button class="btn danger" id="rDel">Remove resident</button><div class="spacer"></div><button class="btn primary" data-act="close">Done</button></div>`;
   const sc = openModal(html(), { wide: true, onClose: () => { if (!r.name) S.residents = S.residents.filter(x => x !== r); save(); render(); } });
   const refresh = () => { const st = sc.scrollTop; sc.querySelector('.modal').innerHTML = html(); sc.scrollTop = st; wire(); };
   const wire = () => {
-    $('#rCY').onchange = e => { r.classYear = +e.target.value; save(); refresh(); };
+    $('#rCY').onchange = e => { r.classYear = +e.target.value; assignPos(r); save(); refresh(); };
     $$('[data-ms]', sc).forEach(el => el.onchange = () => { const [p, k] = el.dataset.ms.split('|'); (r.milestones[p] ||= {})[k] = el.value; save(); refresh(); });
     $$('[data-pr]', sc).forEach(el => el.onchange = () => { r.prite[+el.dataset.pr][el.dataset.k] = el.value === '' ? '' : +el.value; save(); });
     $('#rDel').onclick = () => confirmBox(`Remove ${esc(r.name || 'this resident')} and all their ratings?`, () => { S.residents = S.residents.filter(x => x !== r); save(); render(); }, 'Remove');

@@ -39,9 +39,9 @@ const evChipCls = { pending: 'st-todo', overdue: 'st-blocked', done: 'st-done', 
 
 /* ----- people helpers (resident positions come from the block schedule rows) ----- */
 function resLabel(key) {
+  const r = S.residents.find(x => x.posKey === key); if (r) return r.name || '(unnamed resident)';
   const [cy, i] = key.split('#').map(Number);
-  const named = S.residents.filter(r => r.classYear === cy).sort((a, b) => a.name.localeCompare(b.name));
-  return named[i]?.name || `Class of ${cy + 4} · Resident ${String.fromCharCode(65 + i)}`;
+  return `Class of ${cy + 4} · Resident ${posLetter(i)}`;
 }
 const facName = id => S.faculty.find(f => f.id === id)?.name || '(removed faculty)';
 function partyLabel(kind, ref, text) { return kind === 'resident' ? resLabel(ref) : kind === 'faculty' ? facName(ref) : text; }
@@ -99,7 +99,7 @@ function plannedItems(ay) {
   }
   return out.map(it => ({ ...it, sig: [it.typeId, it.ay, it.period, it.evKind, it.evRef || it.evText, it.subKind, it.subRef || it.subText].join('|') }));
 }
-function resRowKey(r) { const named = S.residents.filter(x => x.classYear === r.classYear).sort((a, b) => a.name.localeCompare(b.name)); return `${r.classYear}#${named.indexOf(r)}`; }
+function resRowKey(r) { if (!r.posKey) assignPos(r); return r.posKey; }
 
 /* ----- view ----- */
 VIEWS.evals = {
@@ -154,11 +154,12 @@ function evFiltered(ay) {
 function evTrackerHTML(ay) {
   if (!evItemsAY(ay).length) return evEmpty(ay);
   const L = evFiltered(ay), lim = S.ui.evLim || 150;
-  return `<div class="toolbar"><input type="search" id="evQ" placeholder="Search person, type, rotation…" value="${esc(S.ui.evQ || '')}">
+  const nf = [S.ui.evQ, S.ui.evG, S.ui.evT, S.ui.evS].filter(Boolean).length;
+  return `<div class="toolbar"><button class="btn phone-only" data-act="tbToggle">☰ Filters${nf ? ` (${nf})` : ''}</button><div class="tb-more"><input type="search" id="evQ" placeholder="Search person, type, rotation…" value="${esc(S.ui.evQ || '')}">
     <select id="evG"><option value="">All groups</option>${Object.entries(EV_GROUPS).map(([k, v]) => `<option value="${k}" ${S.ui.evG === k ? 'selected' : ''}>${v}</option>`).join('')}</select>
     <select id="evT"><option value="">All types</option>${S.evals.types.map(t => `<option value="${t.id}" ${S.ui.evT === t.id ? 'selected' : ''}>${esc(t.name)}</option>`).join('')}</select>
     <select id="evS"><option value="">Any status</option>${Object.entries(EV_ST).map(([k, v]) => `<option value="${k}" ${S.ui.evS === k ? 'selected' : ''}>${v}</option>`).join('')}</select>
-    <div class="spacer"></div><button class="btn" data-act="evBulk">Mark shown complete</button><button class="btn" data-act="evCSV">Export CSV</button></div>
+    </div><div class="spacer"></div><div class="tb-more"><button class="btn" data-act="evBulk">Mark shown complete</button><button class="btn" data-act="evCSV">Export CSV</button></div></div>
     <div class="card tablewrap" style="padding:0">${L.length ? `<table class="t"><thead><tr><th style="width:36px"></th><th>Due</th><th>Evaluation</th><th>Evaluator</th><th>Subject</th><th>Status</th></tr></thead><tbody>${L.slice(0, lim).map(i => { const t = evType(i.typeId), st = evStatus(i); return `<tr><td><input type="checkbox" ${i.completed ? 'checked' : ''} ${i.na ? 'disabled' : ''} data-evdone="${i.id}" title="Mark complete" style="width:18px;height:18px"></td><td style="white-space:nowrap">${fmtDate(i.due, { noYear: 1 })}</td><td><a href="#" data-act="evEdit" data-id="${i.id}">${esc(t.name)}</a>${t.anon ? ' 🔒' : ''}<div class="small muted">${esc(i.period)}</div></td><td>${esc(evEvaluator(i))}</td><td>${esc(evSubject(i))}</td><td><span class="chip ${evChipCls[st]}">${EV_ST[st]}</span>${i.completed ? `<div class="small muted">${fmtDate(i.completed, { noYear: 1 })}</div>` : ''}</td></tr>`; }).join('')}</tbody></table>${L.length > lim ? `<div style="padding:10px;text-align:center"><button class="btn" data-act="evMore">Show ${Math.min(150, L.length - lim)} more (${L.length - lim} hidden)</button></div>` : ''}` : '<div class="empty"><b>No evaluations match</b>Try different filters.</div>'}</div>`;
 }
 document.addEventListener('change', e => { const el = e.target.closest('[data-evdone]'); if (!el) return; const i = S.evals.items.find(x => x.id === el.dataset.evdone); i.completed = el.checked ? todayISO() : ''; save(); render(); });
@@ -238,9 +239,9 @@ ACT.evEdit = el => {
     ${i.evKind === 'role' ? `<label class="f full">Evaluator (name or role)<input type="text" data-bind="evals.items:${i.id}:evText" value="${esc(i.evText)}"></label>` : ''}
     <label class="check full"><input type="checkbox" data-bind="evals.items:${i.id}:na" ${i.na ? 'checked' : ''}> Waived / not applicable (leave, rotation change, etc.)</label>
     <label class="f full">Notes${t.anon ? ' (completion only — don\'t record confidential content here)' : ''}<textarea data-bind="evals.items:${i.id}:notes">${esc(i.notes || '')}</textarea></label></div>
-    <div class="modal-foot"><button class="btn danger" id="eiDel">Delete</button><div class="spacer"></div><button class="btn" id="eiNow">Completed today</button><button class="btn primary" data-act="close">Save</button></div>`, { onClose: () => render() });
+    <div class="modal-foot"><button class="btn danger" id="eiDel">Delete</button><div class="spacer"></div><button class="btn" id="eiNow">Completed today</button><button class="btn primary" data-act="close">Done</button></div>`, { onClose: () => render() });
   $('#eiNow').onclick = () => { i.completed = todayISO(); save(); closeModal(); render(); };
-  $('#eiDel').onclick = () => { S.evals.items = S.evals.items.filter(x => x !== i); save(); closeModal(); render(); };
+  $('#eiDel').onclick = () => { closeModal(); withUndo('Evaluation deleted', () => { S.evals.items = S.evals.items.filter(x => x !== i); }); };
 };
 /* summary used on the dashboard and resident record */
 function evSummaryFor(kind, ref) { ensureEvals(); const its = S.evals.items; const owe = its.filter(i => i.evKind === kind && i.evRef === ref), about = its.filter(i => i.subKind === kind && i.subRef === ref); const f = L => ({ n: L.length, done: L.filter(i => i.completed).length, od: L.filter(i => evStatus(i) === 'overdue').length }); return { owe: f(owe), about: f(about) }; }

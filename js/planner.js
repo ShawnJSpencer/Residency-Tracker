@@ -28,19 +28,22 @@ VIEWS.planner = {
       <div class="seg"><button class="${p.mode === 'gantt' ? 'active' : ''}" data-act="pmode" data-m="gantt">Gantt</button><button class="${p.mode === 'notes' ? 'active' : ''}" data-act="pmode" data-m="notes">Notes & Contacts</button></div>
     </div>
     <div class="toolbar">
+      <button class="btn phone-only" data-act="tbToggle">☰ Filters${[p.q, p.cat, p.owner, p.status, p.hideDone].filter(Boolean).length ? ` (${[p.q, p.cat, p.owner, p.status, p.hideDone].filter(Boolean).length})` : ''}</button>
+      <div class="tb-more">
       <input type="search" placeholder="Search tasks, notes, contacts…" value="${esc(p.q)}" id="pq">
       <select id="pcat"><option value="">All categories</option>${Object.entries(CATS).map(([k, c]) => `<option value="${k}" ${p.cat === k ? 'selected' : ''}>${c.label}</option>`).join('')}</select>
       <select id="powner"><option value="">All owners</option>${owners.map(o => `<option ${p.owner === o ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select>
       <select id="pstatus"><option value="">Any status</option>${Object.entries(STATUS).map(([k, v]) => `<option value="${k}" ${p.status === k ? 'selected' : ''}>${v}</option>`).join('')}<option value="overdue" ${p.status === 'overdue' ? 'selected' : ''}>Overdue</option></select>
       <select id="psort"><option value="sheet" ${p.sort === 'sheet' ? 'selected' : ''}>Sheet order</option><option value="start" ${p.sort === 'start' ? 'selected' : ''}>By start month</option><option value="cat" ${p.sort === 'cat' ? 'selected' : ''}>By category</option></select>
       <label class="check"><input type="checkbox" id="phide" ${p.hideDone ? 'checked' : ''}> Hide done</label>
+      </div>
       <div class="spacer"></div>
       ${p.mode === 'gantt' ? `<button class="btn ${paintEdit ? 'on' : ''}" data-act="paintmode">${paintEdit ? '✓ Done editing bars' : '✎ Edit bars'}</button>` : ''}
-      <button class="btn" data-act="importXlsx">Import Excel</button>
-      <button class="btn" data-act="plannerCSV">Export CSV</button>
+      <div class="tb-more"><button class="btn" data-act="importXlsx">Import Excel</button>
+      <button class="btn" data-act="plannerCSV">Export CSV</button></div>
       <button class="btn primary" data-act="addTask">+ Task</button>
     </div>
-    <div class="legend">${Object.entries(CATS).map(([k, c]) => `<span data-act="togglecat" data-k="${k}" class="${p.hidden.includes(k) ? 'off' : ''}"><i style="background:${catColor(k)}"></i>${c.label}</span>`).join('')}<span class="muted" style="cursor:default">· tap a category to hide it</span></div>
+    <div class="legend">${Object.entries(CATS).map(([k, c]) => `<span data-act="togglecat" data-k="${k}" class="${p.hidden.includes(k) ? 'off' : ''}"><i style="background:${catColor(k)}"></i>${c.label}</span>`).join('')}<span class="muted phone-hide" style="cursor:default">· tap a category to hide it</span></div>
     ${paintEdit && p.mode === 'gantt' ? `<div class="gantt-editing-banner"><b>Editing bars:</b> tap a month to add/remove it, or drag across months to paint. Tap the task name to open details.</div>` : ''}
     ${p.mode === 'gantt' ? ganttHTML() : notesHTML()}`;
   },

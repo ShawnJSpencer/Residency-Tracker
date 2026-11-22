@@ -35,9 +35,7 @@ function blockRows(ay) {
   const ay0 = acadYear(S.settings.programStart), per = +S.settings.perClass || 1, rows = [];
   for (let pgy = 1; pgy <= 4; pgy++) {
     const cy = ay - pgy + 1; if (cy < ay0) continue;
-    const named = S.residents.filter(r => r.classYear === cy).sort((a, b) => a.name.localeCompare(b.name));
-    const n = Math.max(per, named.length);
-    for (let i = 0; i < n; i++) rows.push({ key: `${cy}#${i}`, pgy, cy, i, label: named[i]?.name || `Resident ${String.fromCharCode(65 + i)}`, named: !!named[i] });
+    classPositions(cy).forEach(p => rows.push({ key: p.key, pgy, cy, i: p.i, label: p.r?.name || `Resident ${posLetter(p.i)}`, named: !!p.r }));
   }
   return rows;
 }
@@ -154,8 +152,7 @@ function blkReqHTML() {
   // every resident position across the 4 years of its class
   const people = [];
   for (let cy = ay0; cy <= ay0 + 4; cy++) {
-    const named = S.residents.filter(r => r.classYear === cy).sort((a, b) => a.name.localeCompare(b.name));
-    for (let i = 0; i < Math.max(per, named.length); i++) people.push({ key: `${cy}#${i}`, cy, label: named[i]?.name || `Class of ${cy + 4} · ${String.fromCharCode(65 + i)}` });
+    classPositions(cy).forEach(p => people.push({ key: p.key, cy, label: p.r?.name || `Class of ${cy + 4} · ${posLetter(p.i)}` }));
   }
   const tally = p => { const t = {}; for (let y = p.cy; y < p.cy + 4; y++) (S.blocks.assign[y]?.[p.key] || []).slice(0, nBlocks()).forEach(id => { const R = rot(id); if (R) t[R.cat] = (t[R.cat] || 0) + 1; }); return t; };
   const used = ROT_CATS.filter(c => S.blocks.rotations.some(R => R.cat === c));

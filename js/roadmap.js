@@ -15,6 +15,7 @@ const ROADMAP = {
     ['v4', 'Gantt: caret for short/full names; press-and-hold shows full name on iPhone'],
     ['v4', 'Anonymous Reports shell: QR code, resident form preview, flashing new-report alert'],
     ['v5', 'Roadmap & Checklists page'],
+    ['v8', 'Stable resident IDs, backup reminders & sharing, Undo after deletes, iPhone menu & filters, first-run setup guide'],
     ['v7', 'iPhone: edit panels clear the status bar with a sticky close button; no zoom-in on text boxes; one press-and-hold bubble'],
     ['v6', 'iPad home-screen app fits below the status bar; faster scrolling & caret; name column no longer balloons on wide screens'],
   ],
@@ -57,7 +58,7 @@ VIEWS.roadmap = {
     const ideasDone = ROADMAP.ideas.filter(([k]) => c['idea:' + k]).length;
     const setupRows = SETUP.map(([k, l, auto]) => { const a = auto && auto(); return { k, l, done: a || !!c['setup:' + k], a }; });
     const rptDone = RPT_CHECKLIST.filter(([k]) => S.reports.checklist[k]).length;
-    return `<div class="page-head"><div><h1>Roadmap & Checklists</h1><div class="sub">Everything still to build or set up, in one place. ${roadmapOpen()} open item${roadmapOpen() === 1 ? '' : 's'}.</div></div></div>
+    return `<div class="page-head"><div><h1>Roadmap & Checklists</h1><div class="sub">Everything still to build or set up, in one place. ${roadmapOpen()} open item${roadmapOpen() === 1 ? '' : 's'}.</div></div><div class="spacer"></div>${S.ui.hideGuide ? '<button class="btn" data-act="guideShow">Show setup guide on Dashboard</button>' : ''}</div>
     <div class="grid g2">
       <div class="card"><h2>Ideas to build next <span class="spacer"></span>${prog(ideasDone, ROADMAP.ideas.length)}</h2>
         <div class="list">${ROADMAP.ideas.map(([k, l]) => row('idea:' + k, esc(l), !!c['idea:' + k])).join('')}</div>
@@ -82,4 +83,6 @@ document.addEventListener('change', e => {
   const m = e.target.closest('[data-rmm]'); if (m) { S.roadmap.mine.find(x => x.id === m.dataset.rmm).done = m.checked; save(); render(); }
 });
 ACT.rmAdd = () => { const v = $('#rmNew').value.trim(); if (!v) return; S.roadmap.mine.push({ id: uid(), t: v, done: false }); save(); render(); setTimeout(() => $('#rmNew')?.focus(), 0); };
-ACT.rmDel = el => { S.roadmap.mine = S.roadmap.mine.filter(m => m.id !== el.dataset.id); save(); render(); };
+ACT.rmDel = el => withUndo('Item deleted', () => { S.roadmap.mine = S.roadmap.mine.filter(m => m.id !== el.dataset.id); });
+
+ACT.guideShow = () => { S.ui.hideGuide = false; save(); location.hash = '#/dashboard'; };
