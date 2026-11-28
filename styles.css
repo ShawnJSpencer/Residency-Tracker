@@ -367,3 +367,55 @@ table.gantt{table-layout:fixed;width:100%;--nw:300px;min-width:calc(var(--nw) + 
   .seg button{padding:9px 13px}
 }
 @media (max-width:860px){.nav-all{position:sticky;left:0;z-index:3;background:var(--nav);box-shadow:8px 0 10px -4px var(--nav)}}
+
+.qlinks{display:flex;flex-direction:column;gap:6px}
+.qlink{display:flex;align-items:center;gap:6px;padding:9px 12px;border:1px solid var(--line-strong);border-radius:8px;text-decoration:none;font-weight:600;background:var(--surface-2)}
+.qlink:hover{border-color:var(--accent)}
+.rowlink{text-decoration:none;font-size:13px;flex:none;padding:2px 4px;border-radius:5px}
+.rowlink:hover{background:var(--accent-soft)}
+/* ---------- v9: photos ---------- */
+.av{border-radius:50%;object-fit:cover;flex:none;display:inline-block;vertical-align:middle;background:var(--surface-2)}
+.av-i{display:inline-flex;align-items:center;justify-content:center;background:var(--accent-soft);color:var(--accent);font-weight:800;letter-spacing:.3px}
+.photorow{display:flex;gap:14px;align-items:center;margin-bottom:14px}
+.pslot{display:flex;flex-direction:column;gap:6px;flex:none}
+.pslot img,.pslot-empty{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:10px;border:1px solid var(--line-strong);display:block}
+.pslot.sq img,.pslot.sq .pslot-empty{aspect-ratio:1;border-radius:50%}
+.pslot-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:var(--surface-2);color:var(--ink-3);font-size:22px}
+.pslot-empty span{font-size:11px;font-weight:600}
+.pslot-btns{display:flex;gap:4px;justify-content:center;flex-wrap:wrap}
+.faces{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px}
+.face{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 10px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px;cursor:pointer}
+.face:hover{border-color:var(--accent)}
+.face .av{margin-bottom:6px}
+label.check .av{margin-right:2px}
+
+/* ---------- v9: sites ---------- */
+.sites{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.site{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;cursor:pointer;display:flex;flex-direction:column}
+.site:hover{border-color:var(--accent)}
+.site-img{aspect-ratio:16/9;background:var(--surface-2);display:flex;align-items:center;justify-content:center;text-align:center;font-size:30px;color:var(--ink-3)}
+.site-img small{font-size:12px}
+.site-img img{width:100%;height:100%;object-fit:cover}
+.site-body{padding:12px 14px 14px}
+.site-name{font-size:16px}
+.sitephotos{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+.sitemap{margin:12px 0 8px;border-radius:10px;overflow:hidden;border:1px solid var(--line-strong);height:240px}
+.sitemap iframe{width:100%;height:100%;border:0}
+.where{max-width:560px}
+.where-img{width:100%;max-height:260px;object-fit:cover;border-radius:10px;margin-top:10px;display:block}
+#siteMap .leaflet-container{font:inherit}
+/* ---------- v9: interview-day mode, onboarding, call ---------- */
+.dm-card{border:1px solid var(--line-strong);border-radius:12px;padding:14px;margin-bottom:12px;background:var(--surface)}
+.dm-top{display:flex;gap:14px;align-items:center;margin-bottom:10px}
+.dm-scores{display:flex;flex-direction:column;gap:6px}
+.dm-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center}
+.dm-row .seg button{min-width:40px}
+@media (max-width:600px){.dm-row{grid-template-columns:1fr}}
+.onb th{white-space:normal;min-width:90px;font-size:10.5px;vertical-align:bottom}
+.onbc{text-align:center;white-space:nowrap}
+.onbc input[type=date]{display:block;margin:4px auto 0;font-size:12px;padding:3px 4px;width:128px}
+.calltab td{padding:4px 8px;vertical-align:middle}
+.calltab tr.we td{background:var(--surface-2)}
+.calltab tr.today td:first-child{color:var(--today)}
+.calltab select{min-width:130px}
+#callgrid .card table.t th,#callgrid .card table.t td{padding:6px 5px;font-size:12.5px}

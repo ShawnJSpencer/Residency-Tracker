@@ -15,6 +15,7 @@ const ROADMAP = {
     ['v4', 'Gantt: caret for short/full names; press-and-hold shows full name on iPhone'],
     ['v4', 'Anonymous Reports shell: QR code, resident form preview, flashing new-report alert'],
     ['v5', 'Roadmap & Checklists page'],
+    ['v9', 'Task quick-links; faculty & resident photos, face book, website export, class composite; Training Sites with maps, directions, PLAs and Where am I?; APE report builder; onboarding & credential expirations; call schedule; interview-day mode; documents; wellness'],
     ['v8', 'Stable resident IDs, backup reminders & sharing, Undo after deletes, iPhone menu & filters, first-run setup guide'],
     ['v7', 'iPhone: edit panels clear the status bar with a sticky close button; no zoom-in on text boxes; one press-and-hold bubble'],
     ['v6', 'iPad home-screen app fits below the status bar; faster scrolling & caret; name column no longer balloons on wide screens'],
@@ -24,9 +25,9 @@ const ROADMAP = {
     ['leave', 'Vacation & leave weeks on the block schedule'],
     ['logs', 'Psychotherapy & case logs'],
     ['scholar', 'Scholarly activity & QI projects'],
-    ['sites', 'Training sites & program letters of agreement (PLAs)'],
     ['budget', 'Program budget'],
     ['sync', 'Real syncing between devices (instead of backup files)'],
+    ['resident-login', 'Resident sign-in (Intermountain-approved hosting) so residents see their own schedule, sites and Where am I?'],
     ['rpt-live', 'Anonymous reports: decide how reports are actually delivered (with Intermountain IT / GME)'],
   ],
 };

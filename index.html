@@ -11,30 +11,36 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-180.png">
-<link rel="stylesheet" href="styles.css?v=8">
+<link rel="stylesheet" href="styles.css?v=9">
 </head>
 <body>
 <div class="app">
   <nav class="nav" id="nav"></nav>
   <main class="main" id="main"></main>
 </div>
-<script src="seed.js?v=8"></script>
-<script src="js/core.js?v=8"></script>
-<script src="js/planner.js?v=8"></script>
-<script src="js/xlsx.js?v=8"></script>
-<script src="js/views-a.js?v=8"></script>
-<script src="js/views-b.js?v=8"></script>
-<script src="js/blocks.js?v=8"></script>
-<script src="js/evals.js?v=8"></script>
-<script src="js/qr.js?v=8"></script>
-<script src="js/reports.js?v=8"></script>
-<script src="js/roadmap.js?v=8"></script>
-<script src="js/guide.js?v=8"></script>
+<script src="seed.js?v=9"></script>
+<script src="js/core.js?v=9"></script>
+<script src="js/planner.js?v=9"></script>
+<script src="js/xlsx.js?v=9"></script>
+<script src="js/views-a.js?v=9"></script>
+<script src="js/views-b.js?v=9"></script>
+<script src="js/blocks.js?v=9"></script>
+<script src="js/evals.js?v=9"></script>
+<script src="js/qr.js?v=9"></script>
+<script src="js/reports.js?v=9"></script>
+<script src="js/roadmap.js?v=9"></script>
+<script src="js/guide.js?v=9"></script>
+<script src="js/links.js?v=9"></script>
+<script src="js/photos.js?v=9"></script>
+<script src="js/sites.js?v=9"></script>
+<script src="js/extras.js?v=9"></script>
 <script>
-  load(); ensureBlocks(); ensureEvals(); ensureReports(); ensureRoadmap(); applyTheme();
+  function bootExtras() { ensureBlocks(); ensureEvals(); ensureReports(); ensureRoadmap(); ensureSites(); ensureExtras(); seedTaskLinks(); }
+  load(); bootExtras(); applyTheme();
   matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
   window.addEventListener('hashchange', route);
   if (!location.hash) location.hash = '#/' + (S.ui.view || 'dashboard'); else route();
+  initPhotos().then(() => { if (PHOTOS.size && !$('#scrim')) render(); });
 </script>
 </body>
 </html>

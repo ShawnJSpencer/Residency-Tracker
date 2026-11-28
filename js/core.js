@@ -1,6 +1,6 @@
 /* Residency Tracker — core: state, helpers, router, modals */
 'use strict';
-const APP_VERSION = 'v8';
+const APP_VERSION = 'v9';
 const KEY = 'residencyTracker.v1';
 
 const CATS = {
@@ -185,7 +185,7 @@ function showUndo(label, snap) {
 const isIOS = () => /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 const isStandalone = () => navigator.standalone === true || matchMedia('(display-mode: standalone)').matches;
 const daysSince = iso => iso ? daysBetween(iso, todayISO()) : Infinity;
-function backupJSON() { return JSON.stringify(S, null, 1); }
+function backupJSON() { return JSON.stringify({ ...S, photos: typeof PHOTOS !== 'undefined' ? Object.fromEntries(PHOTOS) : {} }); }
 function markBackedUp() { S.meta.lastBackup = todayISO(); save(true); }
 function confirmBox(msg, onYes, yesLabel = 'Delete') {
   openModal(`<div class="modal-head"><h2>Are you sure?</h2></div><p>${msg}</p><div class="modal-foot"><button class="btn" data-act="close">Cancel</button><button class="btn danger" id="cfy">${esc(yesLabel)}</button></div>`);
@@ -215,11 +215,13 @@ const NAV = [
   ['meetings', 'CCC / PEC / Meetings', '<path d="M4 4h16v11H7l-3 3zM8 8h8v2H8z"/>'],
   ['blocks', 'Block Schedule', '<path d="M3 4h18v16H3zm2 2v3h4V6zm6 0v3h4V6zm6 0v3h2V6zM5 11v3h4v-3zm6 0v3h4v-3zm6 0v3h2v-3zM5 16v2h4v-2zm6 0v2h4v-2z"/>'],
   ['evals', 'Evaluations', '<path d="M9 3h6v2h3a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h3zm1.5 13.6 6-6-1.4-1.4-4.6 4.6-2.1-2.1-1.4 1.4z"/>'],
+  ['sites', 'Training Sites', '<path d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/>'],
   ['didactics', 'Didactics', '<path d="M12 3 1 9l11 6 9-4.9V17h2V9zM5 13.2V17l7 4 7-4v-3.8L12 17z"/>'],
   ['sep'],
   ['residents', 'Residents & Milestones', '<path d="M4 20V10h3v10zm6 0V4h3v16zm6 0v-7h3v7z"/>'],
   ['faculty', 'Faculty', '<path d="M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zm7 1a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM2 20v-1c0-3 3.5-5 7-5s7 2 7 5v1zm15 0v-1c0-1.6-.7-2.9-1.8-3.9 3 .2 6.8 1.6 6.8 3.9v1z"/>'],
   ['accred', 'Accreditation', '<path d="M12 2 4 5v6c0 5 3.4 9.7 8 11 4.6-1.3 8-6 8-11V5zm-1.2 14.2-3.5-3.5 1.4-1.4 2.1 2.1 4.9-4.9 1.4 1.4z"/>'],
+  ['docs', 'Documents', '<path d="M6 2h8l6 6v14H6zm7 1.5V9h5.5zM8 13h8v2H8zm0 4h8v2H8z"/>'],
   ['sep'],
   ['roadmap', 'Roadmap & Checklists', '<path d="M4 5h2v2H4zm4 0h12v2H8zm-4 6h2v2H4zm4 0h12v2H8zm-4 6h2v2H4zm4 0h12v2H8z"/>'],
   ['settings', 'Settings & Data', '<path d="M19.4 13a7.6 7.6 0 0 0 0-2l2-1.6-2-3.4-2.4 1a7 7 0 0 0-1.7-1L15 3.5h-4L10.7 6a7 7 0 0 0-1.7 1l-2.4-1-2 3.4 2 1.6a7.6 7.6 0 0 0 0 2l-2 1.6 2 3.4 2.4-1a7 7 0 0 0 1.7 1l.3 2.5h4l.3-2.5a7 7 0 0 0 1.7-1l2.4 1 2-3.4zM13 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/>'],

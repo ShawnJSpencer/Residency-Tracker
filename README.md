@@ -12,9 +12,11 @@ Plain HTML/CSS/JS with no build step and no dependencies. Host it with GitHub Pa
 - **CCC / PEC / Meetings** – agendas, attendance, minutes and action items, plus a tentative academic-year cycle generator.
 - **Block Schedule** – 13 four-week blocks (or 12 months) per year by resident. Tap a block to choose a rotation or drag-paint with a brush; copy & stagger a class. Includes a coverage check (min/max per service), four-year requirement totals vs your targets, and an editable rotation list.
 - **Evaluations** – completion tracking for evaluations of residents (end of rotation, 360°, psychotherapy supervision, semiannual review, self-assessment, CSV, final summative), evaluations by residents (rotation, faculty, program, didactics, ACGME survey), and faculty/program evaluations. Generates each academic year from the roster, faculty and block schedule; tracker, by-person view, email reminders, editable types.
+- **Training Sites** – profiles with building/entrance/parking photos, map and directions, people, PLA status and renewal, first-day info; rotations link to sites, and a "Where am I?" view shows a resident where to go for any date.
+- **Documents** – links to policies, PLAs, the handbook, minutes and forms.
 - **Didactics** – the Thursday 1–5 pm grid. Its tracks follow the PGY ramp-up, and it counts sessions against the 48-Thursday target.
 - **Residents & Milestones** – roster by class, Psychiatry Milestones 2.0 ratings by CCC period, a cohort heatmap, and PRITE scores.
-- **Faculty** – roles (CCC, PEC, interviewer…), website photo/bio status, New Innovations training, and faculty-development hours.
+- **Faculty** – face book with headshots, website bios and a one-tap website export (.zip); roles (CCC, PEC, interviewer…), website photo/bio status, New Innovations training, and faculty-development hours.
 - **Accreditation** – ACGME new-program readiness checklist and policies.
 
 ## Data

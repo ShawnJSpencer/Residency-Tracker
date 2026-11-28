@@ -48,8 +48,8 @@ VIEWS.blocks = {
     ensureBlocks();
     const tab = S.ui.blkTab || 'grid', T = (k, l) => `<button class="${tab === k ? 'active' : ''}" data-act="blktab" data-t="${k}">${l}</button>`;
     return `<div class="page-head"><div><h1>Block & Rotation Schedule</h1><div class="sub">${nBlocks()} blocks per year (${nBlocks() === 13 ? '4-week' : 'monthly'}) · rows are resident positions until residents are named</div></div></div>
-      <div class="tabs">${T('grid', 'Schedule')}${T('coverage', 'Coverage')}${T('req', 'Requirements')}${T('rot', `Rotations (${S.blocks.rotations.length})`)}</div>
-      ${{ grid: blkGridHTML, coverage: blkCoverageHTML, req: blkReqHTML, rot: blkRotHTML }[tab]()}`;
+      <div class="tabs">${T('grid', 'Schedule')}${T('coverage', 'Coverage')}${T('req', 'Requirements')}${T('call', 'Call')}${T('rot', `Rotations (${S.blocks.rotations.length})`)}</div>
+      ${{ grid: blkGridHTML, coverage: blkCoverageHTML, req: blkReqHTML, rot: blkRotHTML, call: callHTML }[tab]()}`;
   },
   after() {
     const s = $('#blkAY'); if (s) s.onchange = () => { S.ui.blkAY = +s.value; save(); render(); };
@@ -172,7 +172,7 @@ function blkRotHTML() {
     <td><input type="text" data-bind="blocks.rotations:${R.id}:abbr" value="${esc(R.abbr)}" style="width:60px" maxlength="5" data-rerender></td>
     <td><input type="text" data-bind="blocks.rotations:${R.id}:name" value="${esc(R.name)}" style="width:100%;min-width:180px"></td>
     <td><select data-bind="blocks.rotations:${R.id}:cat">${ROT_CATS.map(c => `<option ${R.cat === c ? 'selected' : ''}>${c}</option>`).join('')}</select></td>
-    <td><input type="text" data-bind="blocks.rotations:${R.id}:site" value="${esc(R.site)}" style="min-width:140px"></td>
+    <td><select data-bind="blocks.rotations:${R.id}:siteId" style="min-width:150px"><option value="">— no site —</option>${(S.sites || []).map(x => `<option value="${x.id}" ${R.siteId === x.id ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select></td>
     <td><input type="text" list="supl" data-bind="blocks.rotations:${R.id}:supervisor" value="${esc(R.supervisor || '')}" placeholder="faculty name" style="min-width:140px"></td>
     <td><select data-bind="blocks.rotations:${R.id}:c" data-rerender style="background:var(--${R.c});color:#fff;font-weight:700">${[1, 2, 3, 4, 5, 6, 7, 8].map(i => `<option value="s${i}" ${R.c === 's' + i ? 'selected' : ''}>${['Blue', 'Orange', 'Aqua', 'Yellow', 'Pink', 'Green', 'Violet', 'Red'][i - 1]}</option>`).join('')}</select></td>
     <td><input type="number" min="0" data-bind="blocks.rotations:${R.id}:min" value="${R.min}" style="width:60px"></td>

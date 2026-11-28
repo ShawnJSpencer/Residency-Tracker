@@ -7,9 +7,9 @@ This file and the in-app **Roadmap & Checklists** page (`js/roadmap.js`) list th
 - [ ] Vacation & leave weeks on the block schedule
 - [ ] Psychotherapy & case logs
 - [ ] Scholarly activity & QI projects
-- [ ] Training sites & program letters of agreement (PLAs)
 - [ ] Program budget
 - [ ] Real syncing between devices (instead of backup files)
+- [ ] Resident sign-in (Intermountain-approved hosting) so residents see their own schedule, sites and "Where am I?"
 - [ ] Anonymous reports: decide how reports are actually delivered (with Intermountain IT / GME)
 
 ## Setup tasks (Shawn)
@@ -34,6 +34,7 @@ This file and the in-app **Roadmap & Checklists** page (`js/roadmap.js`) list th
 - [ ] Run an end-to-end test before the first residents arrive
 
 ## Built
+- v9: task quick-links; faculty & resident photos, face book, website export (.zip), class composite; Training Sites (photos, map, directions, PLA, first-day info, rotation→site, Where am I?); APE report builder; onboarding checklist with credential expirations; call schedule; interview-day mode; document library; wellness events & check-ins
 - v8: stable resident IDs (schedules/evaluations stay with the person), backup reminders + share-to-device, Safari-tab warning, Undo after deletes, "Done" instead of fake "Save", iPhone "All" menu + collapsible filters + larger tap targets, first-run setup guide, iPhone home-screen spacing
 - v7: iPhone edit panels clear the status bar with a sticky close button; no zoom-in on text boxes; single press-and-hold bubble
 - v6: iPad home-screen app fits below the status bar; faster Gantt scrolling and caret; name column fixed width on wide screens

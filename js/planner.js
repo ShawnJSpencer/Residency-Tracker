@@ -76,7 +76,7 @@ function ganttHTML() {
     const od = taskOverdue(t);
     const ck = t.checklist?.length ? ` · ☑ ${t.checklist.filter(c => c.done).length}/${t.checklist.length}` : '';
     rows += `<tr data-id="${t.id}" class="${t.status === 'done' ? 'done' : ''} ${openTaskId === t.id ? 'sel' : ''}">
-      <td class="namecol" data-act="openTask" data-id="${t.id}"><div class="nm ${t.status === 'done' ? 'done' : ''}"><span class="dot" style="background:${catColor(t.cat)}"></span><span class="t" title="${esc(t.name)}">${esc(t.name)}</span>${od ? '<span class="flag-overdue" title="All scheduled months are past">OVERDUE</span>' : ''}${t.status !== 'todo' && t.status !== 'done' ? statusChip(t.status) : ''}</div>
+      <td class="namecol" data-act="openTask" data-id="${t.id}"><div class="nm ${t.status === 'done' ? 'done' : ''}"><span class="dot" style="background:${catColor(t.cat)}"></span><span class="t" title="${esc(t.name)}">${esc(t.name)}</span>${od ? '<span class="flag-overdue" title="All scheduled months are past">OVERDUE</span>' : ''}${parseLinks(t.links)[0] ? `<a class="rowlink" href="${esc(parseLinks(t.links)[0].url)}" target="_blank" rel="noopener" title="${esc(parseLinks(t.links)[0].label)}" onclick="event.stopPropagation()">🔗</a>` : ''}${t.status !== 'todo' && t.status !== 'done' ? statusChip(t.status) : ''}</div>
       <div class="meta">${t.owner ? `<span>👤 ${esc(t.owner)}</span>` : ''}${t.steps || t.thoughts || t.contacts ? '<span>📝 notes</span>' : ''}<span>${ck.slice(3)}</span></div></td>` +
       months.map(m => {
         const on = set.has(m), s = on && !set.has(ymAdd(m, -1)), e = on && !set.has(ymAdd(m, 1));
@@ -203,8 +203,9 @@ function openTask(id, focusName) {
     <label class="f">Additional steps<textarea data-bind="tasks:${t.id}:steps">${esc(t.steps)}</textarea></label>
     <label class="f" style="margin-top:10px">Contacts<textarea data-bind="tasks:${t.id}:contacts">${esc(t.contacts)}</textarea></label>
     <label class="f" style="margin-top:10px">Thoughts & helpful information<textarea data-bind="tasks:${t.id}:thoughts">${esc(t.thoughts)}</textarea></label>
-    <label class="f" style="margin-top:10px">Links (one per line)<textarea data-bind="tasks:${t.id}:links" placeholder="https://…">${esc(t.links || '')}</textarea></label>
-    ${(t.links || '').split(/\s+/).filter(x => /^https?:\/\//.test(x)).map(u => `<div class="small"><a href="${esc(u)}" target="_blank" rel="noopener">${esc(u)}</a></div>`).join('')}
+    <div class="section-t">Quick links</div>
+    <div class="qlinks">${parseLinks(t.links).map(l => `<a class="qlink" href="${esc(l.url)}" target="_blank" rel="noopener">🔗 ${esc(l.label)}</a>`).join('') || '<span class="small muted">No links yet.</span>'}</div>
+    <label class="f" style="margin-top:8px">Edit links (one per line — “Label | https://…”)<textarea data-bind="tasks:${t.id}:links" data-rr placeholder="Registration | https://…">${esc(t.links || '')}</textarea></label>
     <div class="modal-foot"><button class="btn danger" data-act="delTask" data-id="${t.id}">Delete task</button><div class="spacer"></div><button class="btn" data-act="moveTask" data-id="${t.id}" data-d="-1">↑ Move up</button><button class="btn" data-act="moveTask" data-id="${t.id}" data-d="1">↓ Move down</button><button class="btn primary" data-act="close">Done</button></div>`;
   const sc = openModal(html, { drawer: true, onClose: () => { openTaskId = null; render(); } });
   sc.addEventListener('input', e => {
@@ -212,7 +213,7 @@ function openTask(id, focusName) {
     if (el.dataset.actInput === 'mnote') { t.monthNotes = t.monthNotes || {}; t.monthNotes[el.dataset.m] = el.value; save(); }
     if (el.dataset.actInput === 'clText') { t.checklist[+el.dataset.i].t = el.value; save(); }
   });
-  sc.addEventListener('change', e => { if (e.target.hasAttribute('data-rr')) render(); });
+  sc.addEventListener('change', e => { if (e.target.hasAttribute('data-rr')) { render(); if (e.target.matches('textarea')) openTask(t.id); } });
   const cn = $('#clNew'); cn && cn.addEventListener('keydown', e => { if (e.key === 'Enter') { ACT.clAdd({ dataset: { id: t.id } }); } });
 }
 ACT.taskStatus = el => { findTask(el.dataset.id).status = el.dataset.s; save(); render(); openTask(el.dataset.id); };

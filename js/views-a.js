@@ -8,6 +8,7 @@ function datedItems() {
   S.meetings.forEach(m => m.date && out.push({ date: m.date, end: '', title: `${m.type === 'Other' ? '' : m.type + ': '}${m.title || ''}`.replace(/: $/, ''), time: m.time, c: m.type === 'CCC' ? 's1' : m.type === 'PEC' || m.type === 'APE' ? 's2' : 's5', kind: 'meeting', id: m.id, tentative: m.tentative }));
   S.interviewDays.forEach(d => d.date && out.push({ date: d.date, title: `Interview day${d.format ? ' (' + d.format + ')' : ''}`, c: 's3', kind: 'interview', id: d.id }));
   S.events.forEach(e => e.date && out.push({ date: e.date, end: e.end, title: e.title, c: (CATS[e.type] || CATS.ops).c, kind: 'event', id: e.id }));
+  (S.wellness?.events || []).forEach(e => e.date && out.push({ date: e.date, title: e.title || 'Wellness event', time: e.time, c: 's5', kind: 'wellness', id: e.id }));
   Object.keys(S.didactics.sessions).map(k => k.split('|')[0]).filter((v, i, a) => a.indexOf(v) === i).forEach(d => { if (!S.didactics.cancelled[d]) out.push({ date: d, title: 'Didactics 1–5 pm', time: '13:00', c: 's4', kind: 'didactic' }); });
   return out.sort((a, b) => (a.date + (a.time || '')).localeCompare(b.date + (b.time || '')));
 }
@@ -62,6 +63,7 @@ VIEWS.dashboard = {
     <div class="page-head"><div><h1>${esc(S.settings.programName)}</h1><div class="sub">${new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</div></div></div>
     ${reportBanner()}
     ${dataSafetyNotices()}
+    ${(() => { const c = typeof credentialAlerts === 'function' ? credentialAlerts() : []; const pla = (S.sites || []).filter(s => s.plaExpires && daysBetween(todayISO(), s.plaExpires) <= 90); return c.length || pla.length ? `<div class="notice warn">${c.length ? `<b>${c.length} resident credential${c.length > 1 ? 's' : ''} expiring within 60 days.</b> <a href="#/residents" onclick="S.ui.resTab='onboard'">Review →</a>` : ''}${c.length && pla.length ? '<br>' : ''}${pla.length ? `<b>Affiliation agreement renewal due:</b> ${pla.map(s => esc(s.name) + ' (' + fmtDate(s.plaExpires) + ')').join(', ')} <a href="#/sites">Sites →</a>` : ''}</div>` : ''; })()}
     ${setupGuideCard()}
     <div class="grid g4" style="margin-bottom:16px">
       <div class="card stat"><span class="lbl">Until first residents start</span><span class="num">${dStart > 0 ? dStart.toLocaleString() : '—'}</span><span class="cap">days · ${fmtDate(S.settings.programStart)}</span></div>
@@ -83,6 +85,7 @@ VIEWS.dashboard = {
       <div class="card"><h2>Accreditation readiness <span class="spacer"></span><a class="small" href="#/accred">Checklist →</a></h2>
         <div class="stat"><span class="num">${accDone}/${acc.length}</span><span class="cap">items done or N/A</span></div>
         <div style="margin-top:10px">${hbarList([...new Set(acc.map(a => a.area))].map((ar, i) => { const it = acc.filter(a => a.area === ar); return { label: ar, c: 's' + (i % 8 + 1), total: it.length, done: it.filter(a => a.status === 'done' || a.status === 'na').length, doing: it.filter(a => a.status === 'doing').length }; }))}</div></div>
+      ${typeof whereDashCard === 'function' ? whereDashCard() : ''}
       ${evalDashCard()}
       <div class="card"><h2>Recruitment · ${esc(S.settings.cycle)} <span class="spacer"></span><a class="small" href="#/recruit">Recruitment →</a></h2>
         ${appl.length ? funnelHTML(appl) : `<div class="empty"><b>No applicants yet</b>ERAS opens in the fall; add or import applicants on the Recruitment page.</div>`}
@@ -123,6 +126,7 @@ ACT.calNav = el => { const d = +el.dataset.d; S.ui.calMonth = d === 0 ? curYM() 
 ACT.calItem = el => {
   const k = el.dataset.kind, id = el.dataset.id;
   if (k === 'meeting') editMeeting(id); else if (k === 'interview') editInterviewDay(id); else if (k === 'event') editEvent(id);
+  else if (k === 'wellness') wevEdit(id);
   else if (k === 'didactic') { S.ui.didAY = acadYear(el.dataset.date); location.hash = '#/didactics'; }
 };
 ACT.addEvent = () => { const e = { id: uid(), title: '', date: todayISO(), end: '', type: 'ops', notes: '' }; S.events.push(e); editEvent(e.id, true); };
@@ -158,29 +162,49 @@ VIEWS.faculty = {
     const F = S.faculty;
     const cnt = r => F.filter(f => (f.roles || []).includes(r)).length;
     const ready = k => F.filter(f => f[k]).length;
-    return `<div class="page-head"><div><h1>Faculty</h1><div class="sub">Roster, committee roles, website readiness, New Innovations training & faculty development</div></div><div class="spacer"></div><button class="btn" data-act="facCSV">Export CSV</button><button class="btn primary" data-act="addFac">+ Faculty</button></div>
+    return `<div class="page-head"><div><h1>Faculty</h1><div class="sub">Roster, committee roles, website readiness, New Innovations training & faculty development</div></div><div class="spacer"></div><div class="seg"><button class="${S.ui.facView !== 'table' ? 'active' : ''}" data-act="facView" data-v="faces">Faces</button><button class="${S.ui.facView === 'table' ? 'active' : ''}" data-act="facView" data-v="table">Table</button></div><button class="btn" data-act="facWeb">Website export (.zip)</button><button class="btn" data-act="facCSV">Export CSV</button><button class="btn primary" data-act="addFac">+ Faculty</button></div>
     <div class="grid g4" style="margin-bottom:16px">
       <div class="card stat"><span class="lbl">Core faculty</span><span class="num">${cnt('Core faculty')}</span><span class="cap">${F.length} total</span></div>
       <div class="card stat"><span class="lbl">CCC / PEC members</span><span class="num">${cnt('CCC')} / ${cnt('PEC')}</span><span class="cap">${cnt('Interviewer')} interviewers</span></div>
       <div class="card stat"><span class="lbl">Website ready</span><span class="num">${F.filter(f => f.photo && f.bio).length}/${F.length}</span><span class="cap">photo + bio collected</span></div>
       <div class="card stat"><span class="lbl">NI trained</span><span class="num">${ready('niTrained')}/${F.length}</span><span class="cap">${F.reduce((s, f) => s + (+f.fdHours || 0), 0)} faculty-development hours logged</span></div>
     </div>
-    <div class="card tablewrap" style="padding:0">${F.length ? `<table class="t"><thead><tr><th>Name</th><th>Roles</th><th>Photo</th><th>Bio</th><th>NI trained</th><th>Interviewer trained</th><th>FD hrs</th></tr></thead><tbody>${F.map(f => `<tr class="click" data-act="editFac" data-id="${f.id}"><td><b>${esc(f.name || '(no name)')}</b>${f.degree ? ', ' + esc(f.degree) : ''}<div class="small muted">${esc(f.title || '')}</div></td><td>${(f.roles || []).map(r => `<span class="chip" style="margin:1px">${esc(r)}</span>`).join('')}</td>${['photo', 'bio', 'niTrained', 'intTrained'].map(k => `<td>${f[k] ? '<span style="color:var(--good);font-weight:700">✓</span>' : '<span class="muted">—</span>'}</td>`).join('')}<td>${f.fdHours || 0}</td></tr>`).join('')}</tbody></table>` : `<div class="empty"><b>No faculty yet</b>Add core faculty to track CCC/PEC membership, website photos & bios, and New Innovations training.</div>`}</div>`;
+    ${F.length && S.ui.facView !== 'table' ? `<div class="faces">${F.map(f => `<div class="face" data-act="editFac" data-id="${f.id}">${avatar(f.photoId, f.name, 112)}<b>${esc(f.name || '(no name)')}${f.degree ? ', ' + esc(f.degree) : ''}</b><span class="small muted">${esc(f.title || (f.roles || [])[0] || '')}</span>${!f.photoId || !f.bioText ? `<span class="chip st-todo" style="margin-top:4px">${!f.photoId ? 'needs photo' : 'needs bio'}</span>` : ''}</div>`).join('')}</div>` : `<div class="card tablewrap" style="padding:0">${F.length ? `<table class="t"><thead><tr><th>Name</th><th>Roles</th><th>Photo</th><th>Bio</th><th>NI trained</th><th>Interviewer trained</th><th>FD hrs</th></tr></thead><tbody>${F.map(f => `<tr class="click" data-act="editFac" data-id="${f.id}"><td><div style="display:flex;gap:10px;align-items:center">${avatar(f.photoId, f.name, 36)}<div><b>${esc(f.name || '(no name)')}</b>${f.degree ? ', ' + esc(f.degree) : ''}<div class="small muted">${esc(f.title || '')}</div></div></div></td><td>${(f.roles || []).map(r => `<span class="chip" style="margin:1px">${esc(r)}</span>`).join('')}</td>${['photo', 'bio', 'niTrained', 'intTrained'].map(k => `<td>${f[k] ? '<span style="color:var(--good);font-weight:700">✓</span>' : '<span class="muted">—</span>'}</td>`).join('')}<td>${f.fdHours || 0}</td></tr>`).join('')}</tbody></table>` : `<div class="empty"><b>No faculty yet</b>Add core faculty to track CCC/PEC membership, website photos & bios, and New Innovations training.</div>`}</div>`}`;
   },
+};
+ACT.facView = el => { S.ui.facView = el.dataset.v; save(); render(); };
+ACT.facPhoto = async el => {
+  const f = S.faculty.find(x => x.id === el.dataset.id);
+  if (el.dataset.op === 'del') { await delPhoto(f.photoId); f.photoId = ''; f.photo = false; }
+  else { const d = await pickPhoto({ square: true, max: 600 }); if (!d) return; if (f.photoId) await delPhoto(f.photoId); f.photoId = await putPhoto(d); f.photo = true; }
+  save(); editFac(f.id);
+};
+ACT.facWeb = () => {
+  const F = S.faculty.filter(f => f.name); if (!F.length) return toast('Add faculty first');
+  const enc = new TextEncoder(), files = [];
+  F.forEach(f => { const src = photoSrc(f.photoId); if (src) files.push({ name: `photos/${safeName(f.name)}.jpg`, data: dataURLBytes(src) }); });
+  const bios = F.map(f => `${f.name}${f.degree ? ', ' + f.degree : ''}\n${f.title || ''}\n\n${f.bioText || '(bio not collected yet)'}\n\nPhoto: ${f.photoId ? 'photos/' + safeName(f.name) + '.jpg' : 'not collected yet'}`).join('\n\n----------------------------------------\n\n');
+  files.push({ name: 'faculty-bios.txt', data: enc.encode(bios) });
+  files.push({ name: 'faculty.csv', data: enc.encode(toCSV([['Name', 'Degree', 'Title', 'Roles', 'Photo file', 'Bio'], ...F.map(f => [f.name, f.degree, f.title, (f.roles || []).join('; '), f.photoId ? `photos/${safeName(f.name)}.jpg` : '', f.bioText || ''])])) });
+  downloadBlob(`faculty-website-${todayISO()}.zip`, makeZip(files));
+  const miss = F.filter(f => !f.photoId || !f.bioText).length; toast(miss ? `Exported — ${miss} still missing a photo or bio` : 'Exported photos + bios');
 };
 ACT.addFac = () => { const f = { id: uid(), name: '', degree: 'MD', title: '', email: '', roles: [], photo: false, bio: false, niTrained: false, intTrained: false, fdHours: 0, notes: '' }; S.faculty.push(f); editFac(f.id, true); };
 ACT.editFac = el => editFac(el.dataset.id);
 function editFac(id, isNew) {
   const f = S.faculty.find(x => x.id === id);
   openModal(`<div class="modal-head"><h2>${isNew ? 'Add faculty' : esc(f.name)}</h2><button class="iconbtn" data-act="close">✕</button></div>
-    <div class="form"><label class="f">Name<input type="text" data-bind="faculty:${id}:name" value="${esc(f.name)}" autofocus></label><label class="f">Degree<input type="text" data-bind="faculty:${id}:degree" value="${esc(f.degree)}"></label>
+    <div class="photorow">${photoSlotHTML(f.photoId, 'Headshot', 'facPhoto', `data-id="${id}"`)}<div class="small muted">Take or choose a headshot. It's cropped square and shrunk to save space. Used in the face book, on interview days, meetings, and the website export.</div></div>
+    <div class="form"><label class="f">Name<input type="text" data-bind="faculty:${id}:name" value="${esc(f.name)}" ${isNew ? 'autofocus' : ''}></label><label class="f">Degree<input type="text" data-bind="faculty:${id}:degree" value="${esc(f.degree)}"></label>
     <label class="f">Title / position<input type="text" data-bind="faculty:${id}:title" value="${esc(f.title)}"></label><label class="f">Email<input type="email" data-bind="faculty:${id}:email" value="${esc(f.email)}"></label>
     <div class="f full"><span class="small" style="font-weight:600;color:var(--ink-2)">Roles</span><div style="display:flex;flex-wrap:wrap;gap:8px 14px;margin-top:4px">${FAC_ROLES.map(r => `<label class="check"><input type="checkbox" data-role="${esc(r)}" ${(f.roles || []).includes(r) ? 'checked' : ''}> ${r}</label>`).join('')}</div></div>
     <div class="f full" style="display:flex;flex-wrap:wrap;gap:8px 18px;flex-direction:row">${[['photo', 'Photo collected'], ['bio', 'Bio collected'], ['niTrained', 'New Innovations trained'], ['intTrained', 'Interviewer training done']].map(([k, l]) => `<label class="check"><input type="checkbox" data-bind="faculty:${id}:${k}" ${f[k] ? 'checked' : ''}> ${l}</label>`).join('')}</div>
+    <label class="f full">Website bio<textarea rows="4" data-bind="faculty:${id}:bioText" id="fBio" placeholder="A short bio for the program website">${esc(f.bioText || '')}</textarea></label>
     <label class="f">Faculty development hours<input type="number" step="0.5" data-bind="faculty:${id}:fdHours" value="${f.fdHours || 0}"></label>
     <label class="f full">Notes<textarea data-bind="faculty:${id}:notes">${esc(f.notes)}</textarea></label></div>
     <div class="modal-foot"><button class="btn danger" id="fDel">Remove</button><div class="spacer"></div><button class="btn primary" data-act="close">Done</button></div>`, { onClose: () => { if (!f.name) S.faculty = S.faculty.filter(x => x !== f); save(); render(); } });
   $$('[data-role]').forEach(cb => cb.onchange = () => { f.roles = $$('[data-role]').filter(c => c.checked).map(c => c.dataset.role); save(); });
+  $('#fBio').addEventListener('input', e => { f.bio = !!e.target.value.trim(); });
   $('#fDel').onclick = () => confirmBox(`Remove ${esc(f.name || 'this person')}?`, () => { S.faculty = S.faculty.filter(x => x !== f); save(); render(); }, 'Remove');
 }
 ACT.facCSV = () => download('faculty.csv', toCSV([['Name', 'Degree', 'Title', 'Email', 'Roles', 'Photo', 'Bio', 'NI trained', 'Interviewer trained', 'FD hours'], ...S.faculty.map(f => [f.name, f.degree, f.title, f.email, (f.roles || []).join('; '), f.photo ? 'Y' : '', f.bio ? 'Y' : '', f.niTrained ? 'Y' : '', f.intTrained ? 'Y' : '', f.fdHours])]), 'text/csv');
@@ -191,7 +215,7 @@ VIEWS.accred = {
   title: 'Accreditation',
   render() {
     const areas = [...new Set(S.accreditation.map(a => a.area))];
-    return `<div class="page-head"><div><h1>Accreditation & Readiness</h1><div class="sub">ACGME new-program checklist, policies, and the annual cycle. Tap a status to advance it; tap an item for owner, due date and notes.</div></div><div class="spacer"></div><button class="btn primary" data-act="addAcc">+ Item</button></div>
+    return `<div class="page-head"><div><h1>Accreditation & Readiness</h1><div class="sub">ACGME new-program checklist, policies, and the annual cycle. Tap a status to advance it; tap an item for owner, due date and notes.</div></div><div class="spacer"></div><button class="btn" data-act="apeBuild">Build APE report</button><button class="btn primary" data-act="addAcc">+ Item</button></div>
     <div class="grid g2">${areas.map((ar, i) => { const it = S.accreditation.filter(a => a.area === ar), d = it.filter(a => a.status === 'done' || a.status === 'na').length; return `<div class="card"><h2><span class="dot" style="background:var(--s${i % 8 + 1})"></span>${esc(ar)}<span class="spacer"></span><span class="small muted">${d}/${it.length}</span></h2>
       <div class="meter" style="margin-bottom:8px"><i style="width:${d / it.length * 100}%;background:var(--s${i % 8 + 1})"></i></div>
       <div class="list">${it.map(a => `<div class="li"><div class="grow"><a href="#" data-act="editAcc" data-id="${a.id}" style="${a.status === 'done' ? 'text-decoration:line-through;color:var(--ink-3)' : ''}">${esc(a.item)}</a>${a.owner || a.due ? `<div class="small muted">${esc(a.owner)}${a.owner && a.due ? ' · ' : ''}${a.due ? 'due ' + fmtDate(a.due) : ''}</div>` : ''}</div><span class="chip click st-${a.status}" data-act="accCycle" data-id="${a.id}">${ACC_ST[a.status]}</span></div>`).join('')}</div></div>`; }).join('')}</div>`;
@@ -252,7 +276,7 @@ ACT.backup = () => { download(`residency-tracker-backup-${todayISO()}.json`, bac
 ACT.restore = () => {
   const inp = document.createElement('input'); inp.type = 'file'; inp.accept = '.json,application/json';
   inp.onchange = async () => {
-    try { const d = JSON.parse(await inp.files[0].text()); if (!d.v || !d.tasks) throw new Error('not a Residency Tracker backup'); confirmBox('Replace all data on this device with the backup?', () => { localStorage.setItem(KEY, JSON.stringify(d)); load(); applyTheme(); render(); toast('Backup restored'); }, 'Restore'); }
+    try { const d = JSON.parse(await inp.files[0].text()); if (!d.v || !d.tasks) throw new Error('not a Residency Tracker backup'); confirmBox('Replace all data on this device with the backup?', async () => { const ph = d.photos; delete d.photos; localStorage.setItem(KEY, JSON.stringify(d)); if (ph) await replaceAllPhotos(ph); load(); bootExtras(); applyTheme(); render(); toast('Backup restored'); }, 'Restore'); }
     catch (e) { toast('Restore failed: ' + e.message); }
   };
   inp.click();
